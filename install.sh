@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-REPO_URL="https://github.com/yourusername/syncsmith.git"
+REPO_URL="https://github.com/Abragus/syncsmith"
 INSTALL_DIR="${INSTALL_DIR:-/opt/syncsmith}"
 
 echo "[syncsmith] Installing into $INSTALL_DIR..."
@@ -60,6 +60,12 @@ else
   git -C "$INSTALL_DIR" pull
 fi
 
-cd "$INSTALL_DIR"
-chmod +x runner.sh
-echo "[syncsmith] Ready. Run: sudo $INSTALL_DIR/runner.sh --apply"
+RUNFILE="$INSTALL_DIR/syncsmith.sh"
+chmod +x $RUNFILE
+echo "[syncsmith] Installed to $INSTALL_DIR. Apply settings? [Y/n]"
+read -r RESP
+if [ "$RESP" != "n" ] && [ "$RESP" != "N" ]; then
+    $RUNFILE
+fi
+
+rm -- "$0"
