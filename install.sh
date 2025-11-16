@@ -1,9 +1,5 @@
 #!/bin/sh
 set -e
-REPO_URL="https://github.com/Abragus/syncsmith"
-INSTALL_DIR="${INSTALL_DIR:-/opt/syncsmith}"
-
-echo "[syncsmith] Installing into $INSTALL_DIR..."
 
 # --- Prerequisites -----------------------------------------------------------
 need_pkg() {
@@ -47,25 +43,47 @@ if [ -n "$MISSING" ]; then
         echo "Please install the following packages manually:$MISSING"
         exit 1
     fi
+else
+    echo "[syncsmith] All required packages already installed."
 fi
 # ---------------------------------------------------------------------------
 
-
 # Clone or update
-if [ ! -d "$INSTALL_DIR/.git" ]; then
-  sudo mkdir -p "$INSTALL_DIR"
-  sudo chown "$USER":"$USER" "$INSTALL_DIR"
-  git clone "$REPO_URL" "$INSTALL_DIR"
+REPO_URL="https://github.com/Abragus/syncsmith"
+
+if git remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
+    echo "[syncsmith] Detected install in current directory, skipping cloning."
+    INSTALL_DIR="$(pwd)"
+    
+    git -C "$INSTALL_DIR" pull
+    echo "[syncsmith] Ready. Apply settings? [Y/n]"
 else
-  git -C "$INSTALL_DIR" pull
+    echo "[syncsmith] Installing into $INSTALL_DIR..."
+    INSTALL_DIR="${INSTALL_DIR:-/opt/syncsmith}"
+
+    sudo mkdir -p "$INSTALL_DIR"
+    sudo chown "$USER":"$USER" "$INSTALL_DIR"
+    git clone "$REPO_URL" "$INSTALL_DIR"
+    echo "[syncsmith] Installed to $INSTALL_DIR. Apply settings? [Y/n]"
 fi
 
 RUNFILE="$INSTALL_DIR/syncsmith.sh"
 chmod +x $RUNFILE
-echo "[syncsmith] Installed to $INSTALL_DIR. Apply settings? [Y/n]"
-read -r RESP
-if [ "$RESP" != "n" ] && [ "$RESP" != "N" ]; then
-    $RUNFILE
-fi
 
-rm -- "$0"
+for _ in $(seq 1 3); do
+    if ! read -r RESP; then
+        RESP="N"
+    fi
+
+    case "$RESP" in
+        ""|Y|y)
+            "$RUNFILE"
+            break
+            ;;
+        N|n)
+            echo "[syncsmith] Exiting without applying settings."
+            break
+            ;;
+    esac
+    echo "[syncsmith] Apply settings? [Y/n] "
+done
