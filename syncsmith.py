@@ -42,41 +42,49 @@ def merge_configs(global_cfg, local_cfg):
 def run_modules(config, dry_run=False):
     modules_cfg = config.get("modules", {})
     mod_path = Path(__file__).parent / "modules"
+    env_data = config.get("env", {})
 
-    for mod_file in mod_path.glob("*.py"):
-        name = mod_file.stem
-        if name.startswith("__"):
+    for module_name in modules_cfg.keys():
+        mod_file = mod_path / f"{module_name}.py"
+        if not mod_file.exists():
+            print(Fore.RED + f"[ERROR] Unknown module '{module_name}' — file not found." + Style.RESET_ALL)
             continue
 
-        # try:
-        module = importlib.import_module(f"modules.{name}")
-        classes = inspect.getmembers(module, inspect.isclass)
-        meta = getattr(module, "metadata", {"name": name})
+        try:
+            # Import the module dynamically
+            module = importlib.import_module(f"modules.{module_name}")
 
-        # Find the first class in the module that inherits from SyncsmithModule
-        cls = [
-            cls for _, cls in inspect.getmembers(module, inspect.isclass)
-            if cls.__module__ == module.__name__
-        ][0]
-        if not cls:
-            print(Fore.YELLOW + f"Skipping {name}: no subclass of SyncsmithModule" + Style.RESET_ALL)
-            continue
+            # Filter classes defined *in this file itself* (not imported ones)
+            classes = [
+                cls for _, cls in inspect.getmembers(module, inspect.isclass)
+                if cls.__module__ == module.__name__
+            ]
+            if not classes:
+                print(Fore.YELLOW + f"[WARN] No class found in {module_name}.py" + Style.RESET_ALL)
+                continue
 
-        instance = cls()
-        module_cfg = modules_cfg.get(meta["name"], {})
-        print(Fore.CYAN + f"==> {meta['name']}: {meta.get('description', '')}" + Style.RESET_ALL)
-        instance.apply(module_cfg, dry_run=dry_run)
+            # Prefer explicitly defined metadata name
+            meta = getattr(module, "metadata", {"name": module_name})
+            module_class = classes[0]
+            instance = module_class()
+            module_config = modules_cfg.get(module_name, {})
 
-        # except Exception as e:
-        #     print(Fore.RED + f"[ERROR] {name}: {e}" + Style.RESET_ALL)
+            if (module_config.get("enabled", True)):
+                print(Fore.CYAN + f"==> Running module: {meta['name']}" + Style.RESET_ALL)
+                instance.apply(modules_cfg.get(module_name, {}), dry_run=dry_run)
+            else:
+                print(Fore.YELLOW + f"==> Module '{meta['name']}' is disabled in config, skipping." + Style.RESET_ALL)
+
+        except Exception as e:
+            print(Fore.RED + f"[ERROR] Failed to run module '{module_name}': {e}" + Style.RESET_ALL)
 
 def ensure_local_config(local_cfg_path, redo_auto_fill=False):
     LOCAL_CFG_DIR = Path(local_cfg_path).parent
 
     os_info = get_os_release()
 
-    # Auto-filled metadata values
-    auto_meta = {
+    # Auto-filled envdata values
+    auto_env = {
         "host": os.uname().nodename,
         "os": os_info.get("ID", "unknown"),
         "os_pretty": os_info.get("PRETTY_NAME", "Unknown"),
@@ -91,13 +99,13 @@ def ensure_local_config(local_cfg_path, redo_auto_fill=False):
     else:
         print(Fore.YELLOW + "[syncsmith] Creating or refreshing local config stub..." + Style.RESET_ALL)
         LOCAL_CFG_DIR.mkdir(parents=True, exist_ok=True)
-        local_cfg = {"meta": {}, "modules": {}}
+        local_cfg = {"env": {}, "modules": {}}
 
     # --- Merge in auto-fill data (don’t overwrite user values) ---
-    local_cfg.setdefault("meta", {})
-    for key, value in auto_meta.items():
-        if key not in local_cfg["meta"]:
-            local_cfg["meta"][key] = value
+    local_cfg.setdefault("env", {})
+    for key, value in auto_env.items():
+        if key not in local_cfg["env"]:
+            local_cfg["env"][key] = value
 
     local_cfg.setdefault("modules", {})
 
