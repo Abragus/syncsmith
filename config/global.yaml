@@ -1,5 +1,0 @@
-modules:
-  bashrc:
-    enabled: true
-  ssh_keys:
-    enabled: true
