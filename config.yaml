@@ -1,0 +1,9 @@
+modules:
+  - when:
+      not:
+        os: debian
+    do:
+    - name: bashrc
+      enabled: true
+  - name: ssh_keys
+    enabled: true
