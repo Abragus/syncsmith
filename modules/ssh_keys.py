@@ -3,7 +3,8 @@ import os
 
 metadata = {
     "name": "ssh_keys",
-    "description": "Sync SSH authorized_keys file"
+    "description": "Sync SSH authorized_keys file",
+    "single_instance": True,
 }
 
 class SSHKeys(ConfFile):

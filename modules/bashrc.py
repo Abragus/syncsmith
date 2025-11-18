@@ -3,7 +3,8 @@ import os
 
 metadata = {
     "name": "bashrc",
-    "description": "Sync .bashrc file"
+    "description": "Sync .bashrc file",
+    "single_instance": True,
 }
 
 class BashRC(ConfFile):

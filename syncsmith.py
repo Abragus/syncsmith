@@ -17,6 +17,7 @@ def load_yaml(path):
 def run_modules(config, env, dry_run=False):
     modules = config.get("modules", {})
     module_path = Path(__file__).parent / "modules"
+    initiated_modules = []
 
     for module_conf in modules:
         mod_file = module_path / f"{module_conf["name"]}.py"
@@ -42,9 +43,14 @@ def run_modules(config, env, dry_run=False):
             module_class = classes[0]
             instance = module_class()
 
+            if (meta.get("single_instance", False) and meta['name'] in initiated_modules):
+                print(Fore.YELLOW + f"[WARN] Module '{meta['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
+                continue
+            
             if (module_conf.get("enabled", True)):
                 print(Fore.CYAN + f"==> Running module: {meta['name']}" + Style.RESET_ALL)
                 instance.apply(module_conf, dry_run=dry_run)
+                initiated_modules.append(meta['name'])
             else:
                 print(Fore.YELLOW + f"==> Module '{meta['name']}' is disabled in config, skipping." + Style.RESET_ALL)
 
