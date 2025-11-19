@@ -43,7 +43,7 @@ def run_modules(config, env, dry_run=False):
             module_class = classes[0]
             instance = module_class()
 
-            if (meta.get("single_instance", False) and meta['name'] in initiated_modules):
+            if (meta.get("single_instance", True) and meta['name'] in initiated_modules):
                 print(Fore.YELLOW + f"[WARN] Module '{meta['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
                 continue
             
