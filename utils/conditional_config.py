@@ -65,6 +65,9 @@ class ConditionalConfig:
                             break
                     else:
                         return False
+                elif key == "tag":
+                    if value not in env.get("tags", []):
+                        return False
                 elif env.get(key) != value:
                     return False
         return True
