@@ -1,0 +1,42 @@
+[/]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/']
+help=@as []
+home=['<Super>e']
+magnifier=@as []
+rotate-video-lock-static=@as []
+screenreader=@as []
+volume-step=5
+
+[custom-keybindings/custom0]
+binding='<Shift><Control>F5'
+command='bl-audio-select alsa_output.pci-0000_c1_00.6.analog-stereo'
+name='Switch to laptop speakers'
+
+[custom-keybindings/custom1]
+binding='<Shift><Control>F6'
+command='bl-audio-select bluez_output.D8_8C_79_A6_56_E3.1 gustav@10.0.1.9'
+name='Switch to Google Home Speakers'
+
+[custom-keybindings/custom2]
+command='/home/gustav/.scripts/change-theme.sh'
+name='Toggle Theme'
+
+[custom-keybindings/custom3]
+binding='<Shift><Control>Escape'
+command='/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=missioncenter io.missioncenter.MissionCenter'
+name='Launch Mission Control'
+
+[custom-keybindings/custom5]
+binding='<Super>r'
+command='gnome-terminal'
+name='Terminal'
+
+[custom-keybindings/custom6]
+binding='<Shift><Control>F8'
+command='/home/gustav/.scripts/smooth_brightness.sh +50'
+name='Brightness up'
+
+[custom-keybindings/custom7]
+binding='<Shift><Control>F7'
+command='/home/gustav/.scripts/smooth_brightness.sh -50'
+name='Brightness down'
