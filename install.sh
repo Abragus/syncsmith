@@ -96,7 +96,7 @@ else
                 ;;
         esac
     fi
-    
+
     ${SUDO} mkdir -p "$INSTALL_DIR"
     ${SUDO} chown "$USER":"$USER" "$INSTALL_DIR"
     git clone "$REPO_URL" "$INSTALL_DIR"
@@ -134,11 +134,4 @@ if [ "$NO_APPLY" = false ]; then
     "$RUNFILE"
 else
     echo "[syncsmith] Exiting without applying settings."
-fi
-
-# Self-delete if run as a one-liner installer
-if [ "$IN_REPO" = false ]; then
-    INSTALLER_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-    echo "[syncsmith] Cleaning up installer..."
-    rm -- "$INSTALLER_PATH"
 fi
