@@ -95,9 +95,9 @@ else
                 exit 1
                 ;;
         esac
-    else
-        ${SUDO} mkdir -p "$INSTALL_DIR"
     fi
+    
+    ${SUDO} mkdir -p "$INSTALL_DIR"
     ${SUDO} chown "$USER":"$USER" "$INSTALL_DIR"
     git clone "$REPO_URL" "$INSTALL_DIR"
     echo "[syncsmith] Installed to $INSTALL_DIR."
