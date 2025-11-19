@@ -20,14 +20,14 @@ def run_modules(config, env, dry_run=False):
     initiated_modules = []
 
     for module_conf in modules:
-        mod_file = module_path / f"{module_conf["name"]}.py"
+        mod_file = module_path / f"{module_conf['name']}.py"
         if not mod_file.exists():
-            print(Fore.RED + f"[ERROR] Unknown module '{module_conf["name"]}' — file not found." + Style.RESET_ALL)
+            print(Fore.RED + f"[ERROR] Unknown module '{module_conf['name']}' — file not found." + Style.RESET_ALL)
             continue
 
         try:
             # Import the module dynamically
-            module = importlib.import_module(f"modules.{module_conf["name"]}")
+            module = importlib.import_module(f"modules.{module_conf['name']}")
 
             # Filter classes defined *in this file itself* (not imported ones)
             classes = [
@@ -35,7 +35,7 @@ def run_modules(config, env, dry_run=False):
                 if cls.__module__ == module.__name__
             ]
             if not classes:
-                print(Fore.YELLOW + f"[WARN] No class found in {module_conf["name"]}.py" + Style.RESET_ALL)
+                print(Fore.YELLOW + f"[WARN] No class found in {module_conf['name']}.py" + Style.RESET_ALL)
                 continue
 
             # Prefer explicitly defined metadata name
@@ -55,7 +55,7 @@ def run_modules(config, env, dry_run=False):
                 print(Fore.YELLOW + f"==> Module '{meta['name']}' is disabled in config, skipping." + Style.RESET_ALL)
 
         except Exception as e:
-            print(Fore.RED + f"[ERROR] Failed to run module '{module_conf["name"]}': {e}" + Style.RESET_ALL)
+            print(Fore.RED + f"[ERROR] Failed to run module '{module_conf['name']}': {e}" + Style.RESET_ALL)
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()
