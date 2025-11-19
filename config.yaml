@@ -1,9 +1,11 @@
 modules:
-  - when:
-      not:
-        os: debian
-    do:
-    - name: bashrc
-      enabled: true
+  - name: bashrc
+    enabled: true
+    
   - name: ssh_keys
     enabled: true
+
+  - when:
+      desktop_environment: gnome
+    do:
+      - name: gnome_sync
