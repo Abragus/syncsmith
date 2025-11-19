@@ -31,9 +31,12 @@ need_pkg() {
 
 need_pkg git python3
 
-if command -v ${SUDO} &> /dev/null; then
-    SUDO="${SUDO}"
-fi 
+if command -v sudo >/dev/null 2>&1; then
+    SUDO="sudo"
+else
+    SUDO=""
+fi
+
 
 if [ -n "$MISSING" ]; then
     echo "[syncsmith] Missing required packages:$MISSING"
@@ -106,7 +109,7 @@ if command -v systemctl >/dev/null 2>&1; then
 
     if [ "$IN_REPO" = false ]; then
         echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
-        mkdir -p /opt/syncsmith
+        ${SUDO} mkdir -p /opt/syncsmith
         ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
     fi
 
