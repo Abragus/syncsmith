@@ -59,7 +59,7 @@ class ConditionalConfig:
                 if key == "not":
                     if ConditionalConfig._evaluate_condition(value, env):
                         return False
-                elif key == "or":
+                elif key in ["or", "any", "either"]:
                     for subcond in value:
                         if ConditionalConfig._evaluate_condition([subcond], env):
                             break
