@@ -107,7 +107,7 @@ fi
 if command -v systemctl >/dev/null 2>&1; then
     echo "[syncsmith] Installing systemd service..."
 
-    if [ "$IN_REPO" = false ]; then
+    if [ "$IN_REPO" = true ]; then
         echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
         ${SUDO} mkdir -p /opt/syncsmith
         ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
