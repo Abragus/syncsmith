@@ -4,8 +4,3 @@ modules:
     
   - name: ssh_keys
     enabled: true
-
-  - when:
-      desktop_environment: gnome
-    do:
-      - name: gnome_sync
