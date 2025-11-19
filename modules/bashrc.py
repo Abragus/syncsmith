@@ -13,5 +13,5 @@ class BashRC(ConfFile):
     
     def apply(self, config=None, dry_run=False):
         result = super().apply(config, dry_run=dry_run)
-        os.system("source ~/.bashrc")
+        os.system(f"source {os.path.expanduser('~/.bashrc')}")
         return result
