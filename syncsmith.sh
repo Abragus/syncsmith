@@ -1,6 +1,6 @@
 #!/bin/sh
 PY=python3
-if [[ -f "$(dirname "$0")/syncsmith.py" ]]; then
+if [ -f "$(dirname "$0")/syncsmith.py" ]; then
     INSTALL_DIR="$(dirname "$0")"
 else
     INSTALL_DIR="${INSTALL_DIR:-/opt/syncsmith}"

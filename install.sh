@@ -1,6 +1,25 @@
 #!/bin/sh
 set -e
 
+REPO_URL="https://github.com/Abragus/syncsmith"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
+    IN_REPO=true
+else
+    IN_REPO=false
+fi
+
+NO_APPLY=false
+for arg in "$@"; do
+    case "$arg" in
+        --no-apply)
+            NO_APPLY=true
+            shift
+            ;;
+    esac
+done
+
+
 # --- Prerequisites -----------------------------------------------------------
 need_pkg() {
     for cmd in "$@"; do
@@ -12,8 +31,9 @@ need_pkg() {
 
 need_pkg git python3
 
-if command -v sudo &> /dev/null; then
-    SUDO="sudo"
+if command -v ${SUDO} &> /dev/null; then
+    SUDO="${SUDO}"
+fi 
 
 if [ -n "$MISSING" ]; then
     echo "[syncsmith] Missing required packages:$MISSING"
@@ -48,42 +68,74 @@ else
 fi
 # ---------------------------------------------------------------------------
 
-# Clone or update
-REPO_URL="https://github.com/Abragus/syncsmith"
-
-if git remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
+# Clone or update repository
+# Check if we're already in a syncsmith repo
+if [ "$IN_REPO" = true ]; then
     echo "[syncsmith] Detected install in current directory, skipping cloning."
-    INSTALL_DIR="$(pwd)"
-    
+    INSTALL_DIR="$SCRIPT_DIR"
     git -C "$INSTALL_DIR" pull
-    echo "[syncsmith] Ready. Apply settings? [Y/n]"
+    echo "[syncsmith] Ready."
 else
-    echo "[syncsmith] Installing into $INSTALL_DIR..."
     INSTALL_DIR="${INSTALL_DIR:-/opt/syncsmith}"
-
-    sudo mkdir -p "$INSTALL_DIR"
-    sudo chown "$USER":"$USER" "$INSTALL_DIR"
+    echo "[syncsmith] Installing into $INSTALL_DIR..."
+    
+    # Check if install directory exists and is non-empty
+    if [ -d "$INSTALL_DIR" ] && [ "$(ls -A "$INSTALL_DIR")" ]; then
+        echo "[syncsmith] WARNING: $INSTALL_DIR already exists and is not empty."
+        read -p "[syncsmith] Overwrite contents? [y/N]: " CONFIRM
+        case "$CONFIRM" in
+            y|Y)
+                ${SUDO} rm -rf "$INSTALL_DIR"
+                ;;
+            *)
+                echo "[syncsmith] Aborting installation."
+                exit 1
+                ;;
+        esac
+    else
+        ${SUDO} mkdir -p "$INSTALL_DIR"
+    fi
+    ${SUDO} chown "$USER":"$USER" "$INSTALL_DIR"
     git clone "$REPO_URL" "$INSTALL_DIR"
-    echo "[syncsmith] Installed to $INSTALL_DIR. Apply settings? [Y/n]"
+    echo "[syncsmith] Installed to $INSTALL_DIR."
 fi
 
-RUNFILE="$INSTALL_DIR/syncsmith.sh"
-chmod +x $RUNFILE
+#  Add systemd service if available
+if command -v systemctl >/dev/null 2>&1; then
+    echo "[syncsmith] Installing systemd service..."
 
-for _ in $(seq 1 3); do
-    if ! read -r RESP; then
-        RESP="N"
+    if [ "$IN_REPO" = false ]; then
+        echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
+        mkdir -p /opt/syncsmith
+        ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
     fi
 
-    case "$RESP" in
-        ""|Y|y)
-            "$RUNFILE"
-            break
-            ;;
-        N|n)
-            echo "[syncsmith] Exiting without applying settings."
-            break
-            ;;
-    esac
-    echo "[syncsmith] Apply settings? [Y/n] "
-done
+
+    ${SUDO} cp "$INSTALL_DIR/scripts/syncsmith.service" /etc/systemd/system/syncsmith.service
+    ${SUDO} cp "$INSTALL_DIR/scripts/syncsmith.timer"   /etc/systemd/system/syncsmith.timer
+
+    ${SUDO} systemctl daemon-reload
+    ${SUDO} systemctl enable --now syncsmith.timer
+
+    echo "[syncsmith] Systemd timer installed and enabled (runs nightly at 03:00)"
+else
+    echo "[syncsmith] Systemd not available — automatic syncing disabled."
+fi
+
+# Run syncsmith once to apply settings
+RUNFILE="$INSTALL_DIR/syncsmith.sh"
+chmod +x "$RUNFILE"
+
+if [ "$NO_APPLY" = false ]; then
+    echo "[syncsmith] Applying settings now..."
+    "$RUNFILE"
+else
+    echo "[syncsmith] Exiting without applying settings."
+fi
+
+# Self-delete if run as a one-liner installer
+if [ "$IN_REPO" = false ]; then
+    INSTALLER_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+    echo "[syncsmith] Cleaning up installer..."
+    rm -- "$INSTALLER_PATH"
+fi

@@ -1,0 +1,6 @@
+[Unit]
+Description=Syncsmith configuration sync
+
+[Service]
+Type=oneshot
+ExecStart=/opt/syncsmith/syncsmith.sh --auto
