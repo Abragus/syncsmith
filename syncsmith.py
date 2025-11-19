@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import argparse, yaml, importlib, os
-import inspect
+import argparse, yaml, importlib, os, inspect
 from modules.__syncsmith_module import SyncsmithModule
 from pathlib import Path
 from colorama import Fore, Style
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
 
-ENV_FILE = Path("environment.yaml")
-CONFIG_FILE = Path("config.yaml")
+ROOT_DIR = Path(__file__).parent
+ENV_FILE = ROOT_DIR / "environment.yaml"
+CONFIG_FILE = ROOT_DIR / "config.yaml"
 
 def load_yaml(path):
     if not path.exists(): return {}
@@ -16,7 +16,7 @@ def load_yaml(path):
 
 def run_modules(config, env, dry_run=False):
     modules = config.get("modules", {})
-    module_path = Path(__file__).parent / "modules"
+    module_path = ROOT_DIR / "modules"
     initiated_modules = []
 
     for module_conf in modules:
@@ -96,6 +96,9 @@ def main():
     parser.add_argument("--yes", "-y", action="store_true", help="Use defaults noninteractively")
     parser.add_argument("--reset-env", action="store_true", help="Reset the local environment configuration file")
     args = parser.parse_args()
+
+    print(Fore.GREEN + "[syncsmith] Getting latest changes from repo..." + Style.RESET_ALL)
+    os.system(f"cd {ROOT_DIR} && git pull")
 
     environment = ensure_local_env(ENV_FILE, reset=args.reset_env)
     raw_config = load_yaml(CONFIG_FILE)
