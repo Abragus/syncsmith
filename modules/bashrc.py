@@ -10,3 +10,8 @@ metadata = {
 class BashRC(ConfFile):
     def __init__(self):
         super().__init__(modulename="bashrc", sourcefile="files/.bashrc", targetfile=os.path.expanduser("~/.bashrc"))
+    
+    def apply(self, config=None, dry_run=False):
+        result = super().apply(config, dry_run=dry_run)
+        os.system("source ~/.bashrc")
+        return result
