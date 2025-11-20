@@ -1,0 +1,10 @@
+# Example environment configuration used by Syncsmith.
+# The environment file is automatically generated at runtime and does not have to be filled out manually, 
+# except for tags, which can optionally be used to categorize or filter configurations.
+
+host: ""
+os: ""
+os_pretty: ""
+os_version: ""
+desktop_environment: ""
+tags: []
