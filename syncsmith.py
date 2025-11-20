@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-import argparse, yaml, importlib, os, inspect
+import os, sys
+vendor = os.path.join(os.path.dirname(__file__), "vendor")
+if os.path.isdir(vendor):
+    sys.path.insert(0, vendor)
+
+from colorama import Fore, Style
+import argparse, yaml, importlib, inspect
 from modules.__syncsmith_module import SyncsmithModule
 from pathlib import Path
-from colorama import Fore, Style
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
 
