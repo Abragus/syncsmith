@@ -40,7 +40,7 @@ confirm() {
     printf "%s %s " "[syncsmith] $prompt_msg" "$suffix"
 
     # Interactive read
-    if ! read -r answer; then
+    if ! read -r answer < /dev/tty; then
         # EOF or read failure — treat as decline
         printf "\n"
         return 1
