@@ -103,7 +103,6 @@ def main():
     args = parser.parse_args()
 
     print(Fore.GREEN + "[syncsmith] Getting latest changes from repo..." + Style.RESET_ALL)
-    os.system(f"cd {ROOT_DIR} && git pull")
 
     environment = ensure_local_env(ENV_FILE, reset=args.reset_env)
     raw_config = load_yaml(CONFIG_FILE)
