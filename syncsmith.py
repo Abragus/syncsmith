@@ -47,18 +47,17 @@ def run_modules(config, env, dry_run=False):
                 print(Fore.YELLOW + f"[WARN] No class found in {module_conf['name']}.py" + Style.RESET_ALL)
                 continue
 
-            # Prefer explicitly defined metadata name
             meta = getattr(module, "metadata", {"name": module_conf["name"]})
-            module_class = classes[0]
-            instance = module_class()
 
-            if (meta.get("single_instance", True) and meta['name'] in initiated_modules):
-                print(Fore.YELLOW + f"[WARN] Module '{meta['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
+            if (meta.get("single_instance", True) and module_conf['name'] in initiated_modules):
+                print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
                 continue
             
-            print(Fore.CYAN + f"==> Running module: {meta['name']}" + Style.RESET_ALL)
+            print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
+            module_class = classes[0]
+            instance = module_class()
             instance.apply(module_conf, dry_run=dry_run)
-            initiated_modules.append(meta['name'])
+            initiated_modules.append(module_conf['name'])
 
         except Exception as e:
             print(Fore.RED + f"[ERROR] Failed to run module '{module_conf['name']}': {e}" + Style.RESET_ALL)
@@ -99,7 +98,7 @@ def main():
     parser = argparse.ArgumentParser(description="Syncsmith — Keep your system configuration in sync")
     parser.add_argument("--dry-run", action="store_true", help="Show actions without applying")
     parser.add_argument("--apply", action="store_true", help="Apply changes")
-    parser.add_argument("--yes", "-y", action="store_true", help="Use defaults noninteractively")
+    parser.add_argument("--yes", "-y", "--auto", action="store_true", help="Use defaults noninteractively")
     parser.add_argument("--reset-env", action="store_true", help="Reset the local environment configuration file")
     args = parser.parse_args()
 
