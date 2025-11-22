@@ -29,7 +29,11 @@ def run_modules(config, env, dry_run=False):
         if not mod_file.exists():
             print(Fore.RED + f"[ERROR] Unknown module '{module_conf['name']}' — file not found." + Style.RESET_ALL)
             continue
-
+        
+        if (not module_conf.get("enabled", True)):
+            print(Fore.YELLOW + f"==> Module '{module_conf['name']}' is disabled in config, skipping." + Style.RESET_ALL)
+            continue
+            
         try:
             # Import the module dynamically
             module = importlib.import_module(f"modules.{module_conf['name']}")
@@ -52,12 +56,9 @@ def run_modules(config, env, dry_run=False):
                 print(Fore.YELLOW + f"[WARN] Module '{meta['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
                 continue
             
-            if (module_conf.get("enabled", True)):
-                print(Fore.CYAN + f"==> Running module: {meta['name']}" + Style.RESET_ALL)
-                instance.apply(module_conf, dry_run=dry_run)
-                initiated_modules.append(meta['name'])
-            else:
-                print(Fore.YELLOW + f"==> Module '{meta['name']}' is disabled in config, skipping." + Style.RESET_ALL)
+            print(Fore.CYAN + f"==> Running module: {meta['name']}" + Style.RESET_ALL)
+            instance.apply(module_conf, dry_run=dry_run)
+            initiated_modules.append(meta['name'])
 
         except Exception as e:
             print(Fore.RED + f"[ERROR] Failed to run module '{module_conf['name']}': {e}" + Style.RESET_ALL)
