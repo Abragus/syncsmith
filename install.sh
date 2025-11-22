@@ -178,7 +178,7 @@ fi
 
 
 RUNFILE="$INSTALL_DIR/syncsmith.sh"
-chmod +x "$RUNFILE" "$@"
+chmod +x "$RUNFILE"
 
 if confirm "Run syncsmith now to apply settings?" "Running syncsmith now..." "y"; then
     echo "[syncsmith] Running syncsmith..."
