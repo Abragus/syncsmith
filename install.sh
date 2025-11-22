@@ -9,16 +9,65 @@ else
     IN_REPO=false
 fi
 
-NO_APPLY=false
+YES_FLAG=false
 for arg in "$@"; do
     case "$arg" in
-        --no-apply)
-            NO_APPLY=true
-            shift
+        -y|--yes)
+            YES_FLAG=true
             ;;
     esac
 done
 
+confirm() {
+    prompt_msg="$1"
+    info_msg="$2"
+    default="$3"
+
+    # Build prompt suffix
+    if [ "$default" = "y" ]; then
+        suffix="[Y/n]"
+    else
+        suffix="[y/N]"
+    fi
+
+    # Auto-confirm path: show info_msg and return success
+    if [ "$YES_FLAG" = "true" ] && [ "$default" != "N" ]; then
+        [ -n "$info_msg" ] && printf "%s\n" "[syncsmith] $info_msg"
+        return 0
+    fi
+
+    # Show the prompt
+    printf "%s %s " "[syncsmith] $prompt_msg" "$suffix"
+
+    # Interactive read
+    if ! read -r answer; then
+        # EOF or read failure — treat as decline
+        printf "\n"
+        return 1
+    fi
+
+    # Normalize empty -> default
+    if [ -z "$answer" ]; then
+        answer="$default"
+    fi
+
+    case "$answer" in
+        Y|y|Y*|y*)
+            [ -n "$info_msg" ] && printf "%s\n" "[syncsmith] $info_msg"
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+
+echo "[syncsmith] This script will install SyncSmith on your system."
+if ! confirm "Continue with installation?" "Starting installation..." "y"; then
+    echo "[syncsmith] Aborting installation."
+    exit 0
+fi
 
 # --- Prerequisites -----------------------------------------------------------
 need_pkg() {
@@ -40,6 +89,10 @@ fi
 
 if [ -n "$MISSING" ]; then
     echo "[syncsmith] Missing required packages:$MISSING"
+    if ! confirm "Attempt automatic dependency installation?" "Attempting automatic dependency installation..." "y"; then
+        echo "[syncsmith] Aborting installation. Please install the missing packages manually."
+        exit 1
+    fi
     echo "[syncsmith] Attempting to detect package manager..."
 
     if command -v apt-get >/dev/null 2>&1; then
@@ -85,16 +138,14 @@ else
     # Check if install directory exists and is non-empty
     if [ -d "$INSTALL_DIR" ] && [ "$(ls -A "$INSTALL_DIR")" ]; then
         echo "[syncsmith] WARNING: $INSTALL_DIR already exists and is not empty."
-        read -p "[syncsmith] Overwrite contents? [y/N]: " CONFIRM
-        case "$CONFIRM" in
-            y|Y)
-                ${SUDO} rm -rf "$INSTALL_DIR"
-                ;;
-            *)
-                echo "[syncsmith] Aborting installation."
-                exit 1
-                ;;
-        esac
+        
+        if confirm "Overwrite contents?" "" "N"; then
+            echo "[syncsmith] Removing existing contents of $INSTALL_DIR..."
+            ${SUDO} rm -rf "$INSTALL_DIR"
+        else
+            echo "[syncsmith] Aborting installation."
+            exit 1
+        fi
     fi
 
     ${SUDO} mkdir -p "$INSTALL_DIR"
@@ -104,9 +155,7 @@ else
 fi
 
 #  Add systemd service if available
-if command -v systemctl >/dev/null 2>&1; then
-    echo "[syncsmith] Installing systemd service..."
-
+if command -v systemctl >/dev/null 2>&1 && confirm "Install systemd service?" "Installing systemd service..." "y"; then
     if [ "$IN_REPO" = true ]; then
         echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
         ${SUDO} mkdir -p /opt/syncsmith
@@ -126,12 +175,16 @@ else
 fi
 
 # Run syncsmith once to apply settings
-RUNFILE="$INSTALL_DIR/syncsmith.sh"
-chmod +x "$RUNFILE"
 
-if [ "$NO_APPLY" = false ]; then
-    echo "[syncsmith] Applying settings now..."
-    "$RUNFILE"
-else
-    echo "[syncsmith] Exiting without applying settings."
+
+RUNFILE="$INSTALL_DIR/syncsmith.sh"
+chmod +x "$RUNFILE" "$@"
+
+if confirm "Run syncsmith now to apply settings?" "Running syncsmith now..." "y"; then
+    echo "[syncsmith] Running syncsmith..."
+    "$RUNFILE" "$@"
+else:
+    echo "[syncsmith] Installation complete. You can run syncsmith later via:"
+    echo "  $RUNFILE"
+    exit 0
 fi
