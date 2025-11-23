@@ -1,5 +1,6 @@
-from modules.__conf_file import ConfFile
+from modules.symlink import SymLink
 import os
+from globals import FILES_DIR
 
 metadata = {
     "name": "bashrc",
@@ -7,11 +8,11 @@ metadata = {
     "single_instance": True,
 }
 
-class BashRC(ConfFile):
+class BashRC(SymLink):
     def __init__(self):
-        super().__init__(modulename="bashrc", sourcefile="files/.bashrc", targetfile=os.path.expanduser("~/.bashrc"))
+        super().__init__(modulename="bashrc")
     
     def apply(self, config=None, dry_run=False):
-        result = super().apply(config, dry_run=dry_run)
+        result = super().apply({"source": os.path.join(FILES_DIR, ".bashrc"), "target": os.path.expanduser("~/.bashrc")}, dry_run=dry_run)
         os.system(f"source {os.path.expanduser('~/.bashrc')}")
         return result

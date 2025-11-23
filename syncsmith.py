@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, sys
+from pathlib import Path
 vendor = os.path.join(os.path.dirname(__file__), "vendor")
 if os.path.isdir(vendor):
     sys.path.insert(0, vendor)
@@ -7,13 +8,9 @@ if os.path.isdir(vendor):
 from colorama import Fore, Style
 import argparse, yaml, importlib, inspect
 from modules.__syncsmith_module import SyncsmithModule
-from pathlib import Path
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
-
-ROOT_DIR = Path(__file__).parent
-ENV_FILE = ROOT_DIR / "environment.yaml"
-CONFIG_FILE = ROOT_DIR / "config.yaml"
+from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, FILES_DIR
 
 def load_yaml(path):
     if not path.exists(): return {}
@@ -101,8 +98,6 @@ def main():
     parser.add_argument("--yes", "-y", "--auto", action="store_true", help="Use defaults noninteractively")
     parser.add_argument("--reset-env", action="store_true", help="Reset the local environment configuration file")
     args = parser.parse_args()
-
-    print(Fore.GREEN + "[syncsmith] Getting latest changes from repo..." + Style.RESET_ALL)
 
     environment = ensure_local_env(ENV_FILE, reset=args.reset_env)
     raw_config = load_yaml(CONFIG_FILE)
