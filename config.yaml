@@ -1,6 +1,9 @@
 modules:
+
+  - name: symlink
+    source: .git-completion.bash
+    target: ~/.git-completion.bash
+  
   - name: bashrc
-    enabled: true
     
   - name: ssh_keys
-    enabled: true

@@ -32,3 +32,5 @@ make_prompt () {
 
     PS1+="\[\033[00m\]$(new_line)"
 }
+
+source ~/.git-completion.bash
