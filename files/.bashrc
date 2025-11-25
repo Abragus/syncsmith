@@ -34,3 +34,6 @@ make_prompt () {
 }
 
 source ~/.git-completion.bash
+
+# Esek
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
