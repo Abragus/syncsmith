@@ -1,3 +1,4 @@
 local.yaml
 __pycache__/
+compiled_files/
 environment.yaml

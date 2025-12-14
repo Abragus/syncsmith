@@ -12,3 +12,8 @@ modules:
       desktop_environment: gnome
     do:
       - name: gnome_sync
+        shortcut_exceptions:
+          - binding: '<Shift><Control>F5'
+          - binding: '<Shift><Control>F6'
+          - binding: '<Shift><Control>F7'
+          - binding: '<Shift><Control>F8'
