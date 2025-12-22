@@ -10,7 +10,7 @@ import argparse, yaml, importlib, inspect
 from modules.__syncsmith_module import SyncsmithModule
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
-from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, FILES_DIR
+from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, COMPILED_FILES_DIR
 
 def load_yaml(path):
     if not path.exists(): return {}
@@ -20,6 +20,9 @@ def run_modules(config, env, dry_run=False):
     modules = config.get("modules", {})
     module_path = ROOT_DIR / "modules"
     initiated_modules = []
+
+    if not COMPILED_FILES_DIR.exists():
+        COMPILED_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
     for module_conf in modules:
         mod_file = module_path / f"{module_conf['name']}.py"
@@ -49,11 +52,19 @@ def run_modules(config, env, dry_run=False):
             print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
             continue
         
+        if not (COMPILED_FILES_DIR / module_conf['name']).exists():
+            os.mkdir(COMPILED_FILES_DIR / module_conf['name'])
+        
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
         module_class = classes[0]
         instance = module_class()
         instance.apply(module_conf, dry_run=dry_run)
         initiated_modules.append(module_conf['name'])
+
+        # Delete module's compiled files if empty
+        compiled_module_dir = COMPILED_FILES_DIR / module_conf['name']
+        if compiled_module_dir.exists() and not any(compiled_module_dir.iterdir()):
+            compiled_module_dir.rmdir()
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()

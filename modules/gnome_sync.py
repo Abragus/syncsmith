@@ -60,7 +60,8 @@ class GnomeSync(SyncsmithModule):
             if (not os.path.exists(str(local_path) + '-local-previous') and not os.path.exists(str(local_path) + '-local-backup')):
                 os.system(f"cp {str(local_path) + '-local'} {str(local_path) + '-local-backup'}")
 
-            os.remove(str(local_path) + '-local-previous')
+            if os.path.exists(str(local_path) + '-local-previous'):
+                os.remove(str(local_path) + '-local-previous')
 
         return super().apply(config, dry_run)
     
