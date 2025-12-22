@@ -31,33 +31,29 @@ def run_modules(config, env, dry_run=False):
             print(Fore.YELLOW + f"==> Module '{module_conf['name']}' is disabled in config, skipping." + Style.RESET_ALL)
             continue
             
-        try:
-            # Import the module dynamically
-            module = importlib.import_module(f"modules.{module_conf['name']}")
+        # Import the module dynamically
+        module = importlib.import_module(f"modules.{module_conf['name']}")
 
-            # Filter classes defined *in this file itself* (not imported ones)
-            classes = [
-                cls for _, cls in inspect.getmembers(module, inspect.isclass)
-                if cls.__module__ == module.__name__
-            ]
-            if not classes:
-                print(Fore.YELLOW + f"[WARN] No class found in {module_conf['name']}.py" + Style.RESET_ALL)
-                continue
+        # Filter classes defined *in this file itself* (not imported ones)
+        classes = [
+            cls for _, cls in inspect.getmembers(module, inspect.isclass)
+            if cls.__module__ == module.__name__
+        ]
+        if not classes:
+            print(Fore.YELLOW + f"[WARN] No class found in {module_conf['name']}.py" + Style.RESET_ALL)
+            continue
 
-            meta = getattr(module, "metadata", {"name": module_conf["name"]})
+        meta = getattr(module, "metadata", {"name": module_conf["name"]})
 
-            if (meta.get("single_instance", True) and module_conf['name'] in initiated_modules):
-                print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
-                continue
-            
-            print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
-            module_class = classes[0]
-            instance = module_class()
-            instance.apply(module_conf, dry_run=dry_run)
-            initiated_modules.append(module_conf['name'])
-
-        except Exception as e:
-            print(Fore.RED + f"[ERROR] Failed to run module '{module_conf['name']}': {e}" + Style.RESET_ALL)
+        if (meta.get("single_instance", True) and module_conf['name'] in initiated_modules):
+            print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
+            continue
+        
+        print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
+        module_class = classes[0]
+        instance = module_class()
+        instance.apply(module_conf, dry_run=dry_run)
+        initiated_modules.append(module_conf['name'])
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()
