@@ -30,16 +30,19 @@ class GnomeSync(SyncsmithModule):
 
         conf_files = [
             "settings-daemon/plugins/media-keys",
-            # "desktop/wm/keybindings",
-            # "shell/keybindings",
-            # "mutter/keybindings",
-            # "mutter/wayland/keybindings",
+            "desktop/wm/keybindings",
+            "shell/keybindings",
+            "mutter/keybindings",
+            "mutter/wayland/keybindings",
         ]
 
         for conf_file in conf_files:
             global_path = STORAGE_DIR / conf_file.replace("/", "-")
             local_path = COMPILED_DIR / conf_file.replace("/", "-")
 
+            if (os.path.exists(str(local_path) + '-local')):
+                os.system(f"mv {str(local_path) + '-local'} {str(local_path) + '-local-previous'}")
+                
             os.system(f"dconf dump /org/gnome/{conf_file}/ > {str(local_path) + '-local'}")
 
             local_keybindings = self._parse_gnome_keybindings(str(local_path) + '-local')
@@ -53,10 +56,11 @@ class GnomeSync(SyncsmithModule):
                 os.system(f"dconf load /org/gnome/{conf_file}/ < {str(local_path) + '-local'}")
             print(Fore.GREEN + f"[gnome_sync] Applied compiled Gnome settings for '{conf_file}'." + Style.RESET_ALL)
             
-            # If local_previous doesn't exist yet, backup current local
-            if not os.path.exists(str(local_path) + '-local-previous'):
+            # If first run (local_previous doesn't exist), backup current local
+            if (not os.path.exists(str(local_path) + '-local-previous') and not os.path.exists(str(local_path) + '-local-backup')):
                 os.system(f"cp {str(local_path) + '-local'} {str(local_path) + '-local-backup'}")
-            os.system(f"mv {str(local_path) + '-local'} {str(local_path) + '-local-previous'}")
+
+            os.remove(str(local_path) + '-local-previous')
 
         return super().apply(config, dry_run)
     
@@ -124,7 +128,7 @@ class GnomeSync(SyncsmithModule):
 
             if name in exceptions_by_name.keys():
                 # Use binding from exception (if present), otherwise fall back
-                compiled_settings[name] = exceptions_by_name[name].get("binding", lbind or "")
+                compiled_settings[name] = exceptions_by_name[name].get("binding", lbind or "@as []")
             elif (gbind in exceptions_by_binding.keys()) and (lbind is not None):
                 # Binding (but not name) in exceptions -> prefer local
                 compiled_settings[name] = lbind
@@ -138,6 +142,12 @@ class GnomeSync(SyncsmithModule):
                 else:
                     compiled_settings[name] = gbind if gbind is not None else (lbind or "")
 
+            compiled_settings[name] = compiled_settings[name].strip("'[] ")
+            if (compiled_settings[name] == "" or compiled_settings[name] == "@as"):
+                compiled_settings[name] = "@as []"
+            elif (not name == "volume-step"):
+                compiled_settings[name] = f"['{compiled_settings[name]}']"
+            
         # print("exceptions_by_name:", exceptions_by_name)
         # print("local_normal:", local_normal)
         # print("local_normal_previous:", local_normal_previous)
