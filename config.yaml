@@ -1,12 +1,20 @@
 modules:
-
-  - name: symlink
+  - name: copy
     source: .git-completion.bash
     target: ~/.git-completion.bash
   
   - name: bashrc
     
   - name: ssh_keys
+
+  - when:
+      host: gustavs-framework-laptop
+    do:
+      - name: copy
+        source: mute_on_public_wifis.sh
+        target: /etc/NetworkManager/dispatcher.d/
+        ownership: root:root
+        permissions: '755'
 
   - when:
       desktop_environment: gnome
