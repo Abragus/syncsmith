@@ -163,8 +163,8 @@ if command -v systemctl >/dev/null 2>&1 && confirm "Install systemd service?" "I
     fi
 
 
-    ${SUDO} cp "$INSTALL_DIR/scripts/syncsmith.service" /etc/systemd/system/syncsmith.service
-    ${SUDO} cp "$INSTALL_DIR/scripts/syncsmith.timer"   /etc/systemd/system/syncsmith.timer
+    ${SUDO} cp "$INSTALL_DIR/files/systemd/syncsmith.service" /etc/systemd/system/syncsmith.service
+    ${SUDO} cp "$INSTALL_DIR/files/systemd/syncsmith.timer"   /etc/systemd/system/syncsmith.timer
 
     ${SUDO} systemctl daemon-reload
     ${SUDO} systemctl enable --now syncsmith.timer
