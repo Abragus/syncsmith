@@ -93,22 +93,22 @@ if [ -n "$MISSING" ]; then
     if command -v apt-get >/dev/null 2>&1; then
         echo "[syncsmith] Installing via apt..."
         ${SUDO} apt-get update -qq
-        ${SUDO} apt-get install -y git python3
+        ${SUDO} apt-get install -y ${MISSING}
     elif command -v dnf >/dev/null 2>&1; then
         echo "[syncsmith] Installing via dnf..."
-        ${SUDO} dnf install -y git python3
+        ${SUDO} dnf install -y ${MISSING}
     elif command -v yum >/dev/null 2>&1; then
         echo "[syncsmith] Installing via yum..."
-        ${SUDO} yum install -y git python3
+        ${SUDO} yum install -y ${MISSING}
     elif command -v pacman >/dev/null 2>&1; then
         echo "[syncsmith] Installing via pacman..."
         ${SUDO} pacman -Sy --noconfirm git python
     elif command -v zypper >/dev/null 2>&1; then
         echo "[syncsmith] Installing via zypper..."
-        ${SUDO} zypper --non-interactive install git python3
+        ${SUDO} zypper --non-interactive install ${MISSING}
     elif command -v apk >/dev/null 2>&1; then
         echo "[syncsmith] Installing via apk..."
-        ${SUDO} apk add git python3
+        ${SUDO} apk add ${MISSING}
     else
         echo "[syncsmith] Could not detect a known package manager."
         echo "Please install the following packages manually:$MISSING"
