@@ -79,6 +79,15 @@ def ensure_local_env(env_file, reset=False):
         "tags": [],
     }
 
+    # Check if on proxmox host using `os.path.isdir("/etc/pve")` and append 'proxmox' tag
+    if os.path.isdir("/etc/pve"):
+        default_env["tags"].append("proxmox")
+    # Check if on a laptop using `os.path.exists("/sys/class/power_supply/BAT*")` and append 'laptop' tag
+    # Check not only BAT0 but any BAT* to cover more hardware variations
+    # Use a os.system command to do it more slimly
+    if os.system("ls /sys/class/power_supply/BAT* >/dev/null 2>&1") == 0:
+        default_env["tags"].append("laptop")
+
     new_env = None
     if env_file.exists() and not reset:
         with open(env_file) as f:
@@ -91,6 +100,11 @@ def ensure_local_env(env_file, reset=False):
     for key, value in default_env.items():
         if key not in new_env:
             new_env[key] = value
+
+    # --- Merge tags ---
+    new_env["tags"] = (new_env.get("tags") or [])
+    new_env["tags"].extend(default_env["tags"])
+    new_env["tags"] = list(dict.fromkeys(new_env["tags"]))
 
     # --- Write back to disk ---
     with open(env_file, "w") as f:
