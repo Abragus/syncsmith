@@ -8,4 +8,4 @@ fi
 
 cd "$INSTALL_DIR" || { echo "[syncsmith] Failed to enter install directory"; exit 1; }
 git pull origin main
-$PY syncsmith.py "$@"
+$INSTALL_DIR/.venv/bin/python $INSTALL_DIR/syncsmith.py "$@"

@@ -3,11 +3,6 @@ set -e
 
 REPO_URL="https://github.com/Abragus/syncsmith"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
-    IN_REPO=true
-else
-    IN_REPO=false
-fi
 
 YES_FLAG=false
 for arg in "$@"; do
@@ -78,7 +73,7 @@ need_pkg() {
     done
 }
 
-need_pkg git python3
+need_pkg git python3 pip
 
 if command -v sudo >/dev/null 2>&1; then
     SUDO="sudo"
@@ -122,10 +117,17 @@ if [ -n "$MISSING" ]; then
 else
     echo "[syncsmith] All required packages already installed."
 fi
+
 # ---------------------------------------------------------------------------
 
 # Clone or update repository
 # Check if we're already in a syncsmith repo
+if git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
+    IN_REPO=true
+else
+    IN_REPO=false
+fi
+
 if [ "$IN_REPO" = true ]; then
     echo "[syncsmith] Detected install in current directory, skipping cloning."
     INSTALL_DIR="$SCRIPT_DIR"
@@ -173,6 +175,19 @@ if command -v systemctl >/dev/null 2>&1 && confirm "Install systemd service?" "I
 else
     echo "[syncsmith] Systemd not available — automatic syncing disabled."
 fi
+
+# Create Python virtual environment
+VENV_DIR="$INSTALL_DIR/.venv"
+
+if [ ! -d "$VENV_DIR" ]; then
+    echo "[syncsmith] Creating Python virtual environment..."
+    python3 -m venv "$VENV_DIR"
+fi
+
+echo "[syncsmith] Installing Python dependencies..."
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+
 
 # Run syncsmith once to apply settings
 

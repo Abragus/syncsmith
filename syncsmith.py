@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-import os, sys
-from pathlib import Path
-vendor = os.path.join(os.path.dirname(__file__), "vendor")
-if os.path.isdir(vendor):
-    sys.path.insert(0, vendor)
-
+import os, argparse, yaml, importlib, inspect
 from colorama import Fore, Style
-import argparse, yaml, importlib, inspect
-from modules.__syncsmith_module import SyncsmithModule
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
 from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, COMPILED_FILES_DIR
