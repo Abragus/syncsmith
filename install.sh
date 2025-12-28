@@ -73,7 +73,7 @@ need_pkg() {
     done
 }
 
-need_pkg git python3 pip
+need_pkg git python3 python3-pip python3-venv
 
 if command -v sudo >/dev/null 2>&1; then
     SUDO="sudo"
