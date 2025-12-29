@@ -69,6 +69,7 @@ def ensure_local_env(env_file, reset=False):
         "os_pretty": os_info.get("PRETTY_NAME", "Unknown"),
         "os_version": os_info.get("VERSION_ID", "unknown"),
         "desktop_environment": os.environ.get("DESKTOP_SESSION", "unknown").strip().lower(),
+        "install_dir": str(ROOT_DIR),
         "tags": [],
     }
 

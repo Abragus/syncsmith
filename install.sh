@@ -119,7 +119,6 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-
 # Clone or update repository
 # Check if we're already in a syncsmith repo
 if git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null | grep -q "$REPO_URL"; then
@@ -156,26 +155,13 @@ else
     echo "[syncsmith] Installed to $INSTALL_DIR."
 fi
 
-#  Add systemd service if available
-if command -v systemctl >/dev/null 2>&1 && confirm "Install systemd service?" "Installing systemd service..." "y"; then
-    if [ "$IN_REPO" = true ] && [ "$INSTALL_DIR" != "/opt/syncsmith" ]; then
-        echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
-        ${SUDO} mkdir -p /opt/syncsmith
-        ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
-    fi
-
-
-    ${SUDO} cp "$INSTALL_DIR/files/systemd/syncsmith.service" /etc/systemd/system/syncsmith.service
-    ${SUDO} cp "$INSTALL_DIR/files/systemd/syncsmith.timer"   /etc/systemd/system/syncsmith.timer
-
-    ${SUDO} systemctl daemon-reload
-    ${SUDO} systemctl enable --now syncsmith.timer
-
-    echo "[syncsmith] Systemd timer installed and enabled (runs nightly at 03:00)"
-else
-    echo "[syncsmith] Systemd not available — automatic syncing disabled."
+if [ "$IN_REPO" = true ] && [ "$INSTALL_DIR" != "/opt/syncsmith" ] && ! [ -d "/opt/syncsmith/.git" ]; then
+    echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
+    ${SUDO} mkdir -p /opt/syncsmith
+    ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
 fi
 
+# ---------------------------------------------------------------------------
 # Create Python virtual environment
 VENV_DIR="$INSTALL_DIR/.venv"
 
@@ -188,9 +174,7 @@ echo "[syncsmith] Installing Python dependencies..."
 "$VENV_DIR/bin/pip" install --upgrade pip
 "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
-echo "[syncsmith] Creating symlink to run syncsmith from anywhere..."
-ln -sf "$INSTALL_DIR/syncsmith.sh" "/usr/local/bin/syncsmith"
-
+# ---------------------------------------------------------------------------
 # Run syncsmith once to apply settings
 
 RUNFILE="$INSTALL_DIR/syncsmith.sh"

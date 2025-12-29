@@ -1,4 +1,25 @@
 modules:
+  - when:
+      install_dir: /opt/syncsmith
+    do:
+      - name: symlink
+        source: /opt/syncsmith/syncsmith.sh
+        target: /usr/local/bin/syncsmith
+      - name: copy
+        source: systemd/syncsmith.service
+        target: /etc/systemd/system/syncsmith.service
+        ownership: root:root
+        permissions: '644'
+      - name: copy
+        source: systemd/syncsmith.timer
+        target: /etc/systemd/system/syncsmith.timer
+        ownership: root:root
+        permissions: '644'
+      - name: systemctl_exec
+        command: "daemon-reload"
+      - name: systemctl_exec
+        command: "enable --now syncsmith.timer"
+
   - name: curl
     url: https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-completion.bash
     path: ~/.git-completion.bash
