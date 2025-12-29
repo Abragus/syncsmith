@@ -19,9 +19,9 @@ class Curl(SyncsmithModule):
             print(f"[DRY RUN] Would curl {config['url']} to {config.get('path', '')}")
             return
         outfile = os.path.expanduser(config.get('path', ''))
-        curl_command = f"curl -o {COMPILED_FILES_DIR if not os.path.isabs(outfile) else ''}{outfile} {config['url']}"
+        curl_command = f"curl -sS -o {COMPILED_FILES_DIR if not os.path.isabs(outfile) else ''}{outfile} {config['url']}"
 
-        print(f"Executing: {curl_command}")
+        print(f"Curling from {config['url']} to {outfile}")
         os.system(curl_command)
     
     def rollback(self, config, dry_run=False):
