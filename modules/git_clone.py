@@ -18,17 +18,24 @@ class GitClone(SyncsmithModule):
         if dry_run:
             print(f"[DRY RUN] Would clone into {config['url']}")
             return
-        
+
+        target_path = os.path.expanduser(config.get("path", ""))
+
+        if os.path.exists(target_path) and os.path.isdir(os.path.join(target_path, ".git")):
+            print(f"Repository already exists at {target_path}, pulling latest changes.")
+            os.system(f"cd {target_path} && git pull")
+            return
+
         clone_command = f"git clone {config['url']}"
 
         if "branch" in config:
             clone_command += f" -b {config['branch']}"
 
-        if not config.get("absolute_path", False):
-            clone_command += COMPILED_FILES_DIR
-        
-        if "path" in config:
-            clone_command += f" {config['path']}"
+        if target_path:
+            if not os.path.isabs(target_path):
+                clone_command += str(COMPILED_FILES_DIR) + "/"
+
+            clone_command += f" {target_path}"
 
         print(f"Executing: {clone_command}")
         os.system(clone_command)
