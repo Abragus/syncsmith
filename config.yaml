@@ -3,12 +3,12 @@ modules:
     source: .git-completion.bash
     target: ~/.git-completion.bash
   
-  - name: bashrc
-    
   - name: ssh_keys
 
   - when:
-      host: gustavs-framework-laptop
+      either:
+        - tag: laptop
+        - host: gustavs-framework-laptop
     do:
       - name: copy
         source: mute_on_public_wifis.sh
@@ -25,3 +25,24 @@ modules:
           - binding: '<Shift><Control>F6'
           - binding: '<Shift><Control>F7'
           - binding: '<Shift><Control>F8'
+  - when:
+      either:
+        - tag: proxmox
+        - not:
+            desktop_environment: unknown
+    do:
+      - name: git_clone
+        url: https://github.com/Abragus/connect
+        path: ~/.local/share/connect
+        absolute_path: true
+      - name: symlink
+        source: connections.txt
+        target: ~/.local/share/connect/connections.txt
+      - name: edit_file
+        file: .bashrc
+        modifications:
+          - add: "alias con=\"~/.local/share/connect/connections.sh\""
+          
+  - name: symlink
+    source: .bashrc
+    target: ~/.bashrc
