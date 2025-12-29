@@ -96,7 +96,7 @@ if [ -n "$MISSING" ]; then
         ${SUDO} apt-get install -y ${MISSING}
     elif command -v dnf >/dev/null 2>&1; then
         echo "[syncsmith] Installing via dnf..."
-        ${SUDO} dnf install -y ${MISSING}
+        ${SUDO} dnf install -y git python3 python3-pip python3-virtualenv
     elif command -v yum >/dev/null 2>&1; then
         echo "[syncsmith] Installing via yum..."
         ${SUDO} yum install -y ${MISSING}
@@ -158,7 +158,7 @@ fi
 
 #  Add systemd service if available
 if command -v systemctl >/dev/null 2>&1 && confirm "Install systemd service?" "Installing systemd service..." "y"; then
-    if [ "$IN_REPO" = true ]; then
+    if [ "$IN_REPO" = true ] && [ "$INSTALL_DIR" != "/opt/syncsmith" ]; then
         echo "[syncsmith] Creating symlink in /opt/syncsmith for portable install..."
         ${SUDO} mkdir -p /opt/syncsmith
         ln -s "$INSTALL_DIR/syncsmith.sh" /opt/syncsmith/syncsmith.sh
@@ -187,6 +187,9 @@ fi
 echo "[syncsmith] Installing Python dependencies..."
 "$VENV_DIR/bin/pip" install --upgrade pip
 "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+
+echo "[syncsmith] Creating symlink to run syncsmith from anywhere..."
+ln -sf "$INSTALL_DIR/syncsmith.sh" "/usr/local/bin/syncsmith"
 
 # Run syncsmith once to apply settings
 
