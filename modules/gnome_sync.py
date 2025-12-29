@@ -54,7 +54,6 @@ class GnomeSync(SyncsmithModule):
             # Apply the compiled local config
             if not dry_run:
                 os.system(f"dconf load /org/gnome/{conf_file}/ < {str(local_path) + '-local'}")
-            print(Fore.GREEN + f"[gnome_sync] Applied compiled Gnome settings for '{conf_file}'." + Style.RESET_ALL)
             
             # If first run (local_previous doesn't exist), backup current local
             if (not os.path.exists(str(local_path) + '-local-previous') and not os.path.exists(str(local_path) + '-local-backup')):
@@ -63,6 +62,7 @@ class GnomeSync(SyncsmithModule):
             if os.path.exists(str(local_path) + '-local-previous'):
                 os.remove(str(local_path) + '-local-previous')
 
+        print(f"[gnome_sync] Applied compiled Gnome keyboard shortcuts.")
         return super().apply(config, dry_run)
     
     def generate_config_stub(self, env):
