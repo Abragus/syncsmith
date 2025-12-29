@@ -1,7 +1,7 @@
 import os
 from modules.__syncsmith_module import SyncsmithModule
 from utils.paths import get_syncsmith_root
-from globals import FILES_DIR
+from globals import COMPILED_FILES_DIR, FILES_DIR
 
 metadata = {
     "name": "symlink",
@@ -16,7 +16,13 @@ class SymLink(SyncsmithModule):
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
 
-        source_file = os.path.join(FILES_DIR, config.get("source", ""))
+        if (config.get("source_absolute_path", False)):
+            source_file = os.path.expanduser(config.get("source", ""))
+        else:
+            source_file = os.path.join(COMPILED_FILES_DIR, config.get("source", ""))
+            if not os.path.exists(source_file):
+                source_file = os.path.join(FILES_DIR, config.get("source", ""))
+
         target_file = os.path.expanduser(config.get("target", ""))
         
         if dry_run:
