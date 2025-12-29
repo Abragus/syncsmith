@@ -34,7 +34,6 @@ modules:
       - name: git_clone
         url: https://github.com/Abragus/connect
         path: ~/.local/share/connect
-        absolute_path: true
       - name: symlink
         source: connections.txt
         target: ~/.local/share/connect/connections.txt
