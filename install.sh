@@ -188,9 +188,7 @@ echo "[syncsmith] Installing Python dependencies..."
 "$VENV_DIR/bin/pip" install --upgrade pip
 "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
-
 # Run syncsmith once to apply settings
-
 
 RUNFILE="$INSTALL_DIR/syncsmith.sh"
 chmod +x "$RUNFILE"
