@@ -1,6 +1,5 @@
 import os
 from modules.__syncsmith_module import SyncsmithModule
-from utils.paths import get_syncsmith_root
 from globals import COMPILED_FILES_DIR, FILES_DIR
 
 metadata = {

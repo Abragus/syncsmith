@@ -1,6 +1,5 @@
-import os, shutil
+import os
 from modules.__syncsmith_module import SyncsmithModule
-from utils.paths import get_syncsmith_root
 from globals import COMPILED_FILES_DIR
 
 metadata = {
@@ -30,6 +29,6 @@ class GitClone(SyncsmithModule):
         
         if "path" in config:
             clone_command += f" {config['path']}"
-            
+
         print(f"Executing: {clone_command}")
         os.system(clone_command)
