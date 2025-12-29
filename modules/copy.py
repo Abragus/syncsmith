@@ -1,3 +1,4 @@
+import filecmp
 import os, shutil
 from modules.__syncsmith_module import SyncsmithModule
 from utils.paths import get_syncsmith_root
@@ -27,7 +28,7 @@ class Copy(SyncsmithModule):
             return
         
         # If file exists, back it up
-        if os.path.exists(target_file) and not os.path.exists(target_file + ".bak"):
+        if os.path.exists(target_file) and not os.path.exists(target_file + ".bak") and not filecmp.cmp(source_file, target_file):
             backup_path = target_file + ".bak"
             print(f"Backing up existing file {target_file} to {backup_path}")
             os.rename(target_file, backup_path)
