@@ -1,7 +1,7 @@
 modules:
-  - name: copy
-    source: .git-completion.bash
-    target: ~/.git-completion.bash
+  - name: curl
+    url: https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-completion.bash
+    path: ~/.git-completion.bash
   
   - name: ssh_keys
 
