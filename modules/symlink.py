@@ -16,13 +16,7 @@ class SymLink(SyncsmithModule):
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
 
-        if (config.get("source_absolute_path", False)):
-            source_file = os.path.expanduser(config.get("source", ""))
-        else:
-            source_file = os.path.join(COMPILED_FILES_DIR, config.get("source", ""))
-            if not os.path.exists(source_file):
-                source_file = os.path.join(FILES_DIR, config.get("source", ""))
-
+        source_file = SyncsmithModule._find_file(self, config.get("source", ""))
         target_file = os.path.expanduser(config.get("target", ""))
         
         if dry_run:
@@ -40,3 +34,19 @@ class SymLink(SyncsmithModule):
         
         print(f"Linking from {source_file} to {target_file}")
         os.symlink(source_file, target_file)
+    
+    def rollback(self, config, dry_run=False):
+        super().rollback(config, dry_run=dry_run)
+
+        target_file = os.path.expanduser(config.get("target", ""))
+
+        if dry_run:
+            print(f"[DRY RUN] Would remove symlink at {target_file}")
+            return
+        
+        if os.path.islink(target_file):
+            os.unlink(target_file)
+        
+        backup_path = target_file + ".bak"
+        if os.path.exists(backup_path):
+            os.rename(backup_path, target_file)

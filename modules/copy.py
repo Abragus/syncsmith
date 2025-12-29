@@ -16,7 +16,7 @@ class Copy(SyncsmithModule):
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
 
-        source_file = os.path.join(FILES_DIR, config.get("source", ""))
+        source_file = SyncsmithModule._find_file(self, config.get("source", ""))
         target_file = os.path.expanduser(config.get("target", ""))
 
         if target_file.endswith('/'):
@@ -42,3 +42,22 @@ class Copy(SyncsmithModule):
         if config.get("permissions"):
             print(f"Setting permissions of {target_file} to {config['permissions']}")
             os.system(f"chmod {config['permissions']} '{target_file}'")
+    
+    def rollback(self, config, dry_run=False):
+        super().rollback(config, dry_run=dry_run)
+
+        target_file = os.path.expanduser(config.get("target", ""))
+
+        if target_file.endswith('/'):
+            target_file = os.path.join(target_file, os.path.basename(config.get("source", "")))
+
+        if dry_run:
+            print(f"[DRY RUN] Would remove copied file at {target_file}")
+            return
+        
+        if os.path.exists(target_file):
+            os.remove(target_file)
+        
+        backup_path = target_file + ".bak"
+        if os.path.exists(backup_path):
+            os.rename(backup_path, target_file)

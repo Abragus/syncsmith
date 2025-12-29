@@ -32,3 +32,17 @@ class GitClone(SyncsmithModule):
 
         print(f"Executing: {clone_command}")
         os.system(clone_command)
+    
+    def rollback(self, config, dry_run=False):
+        super().rollback(config, dry_run=dry_run)
+
+        target_path = config.get("path", "")
+        if not config.get("absolute_path", False):
+            target_path = os.path.join(COMPILED_FILES_DIR, target_path)
+
+        if dry_run:
+            print(f"[DRY RUN] Would remove cloned repository at {target_path}")
+            return
+        
+        if os.path.exists(target_path):
+            os.system(f"rm -rf {target_path}")

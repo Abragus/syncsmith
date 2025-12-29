@@ -14,3 +14,6 @@ class SSHKeys(SymLink):
 
     def apply(self, config=None, dry_run=False):
         return super().apply({"source": os.path.join(FILES_DIR, "ssh_keys"), "target": os.path.expanduser("~/.ssh/authorized_keys")}, dry_run=dry_run)
+    
+    def rollback(self, config=None, dry_run=False):
+        return super().rollback({"source": os.path.join(FILES_DIR, "ssh_keys"), "target": os.path.expanduser("~/.ssh/authorized_keys")}, dry_run=dry_run)

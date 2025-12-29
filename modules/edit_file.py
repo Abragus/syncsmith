@@ -16,14 +16,12 @@ class EditFile(SyncsmithModule):
         super().apply(config, dry_run=dry_run)
 
         source_file = os.path.join(FILES_DIR, config.get("file", ""))
-        if "output" in config:
-            if os.path.isabs(output_file):
-                output_file = os.path.expanduser(output_file)
-            else:
-                output_file = os.path.join(COMPILED_FILES_DIR, config.get("output", ""))
-        else:
-            output_file = os.path.join(COMPILED_FILES_DIR, config.get("file", ""))
-        
+        output_file = SyncsmithModule._find_file(
+            self,
+            config.get("output", ""),
+            config.get("file", "")
+        )
+
         with open(source_file, "r") as f:
             content = f.read()
             for modification in config.get("modifications", []):
@@ -48,3 +46,19 @@ class EditFile(SyncsmithModule):
                 f.write(content)
         
         print(f"Edited file {source_file}")
+
+    def rollback(self, config, dry_run=False):
+        super().rollback(config, dry_run=dry_run)
+
+        target_file = SyncsmithModule._find_file(
+            self,
+            config.get("file", ""),
+            config.get("output", "")
+        )
+        
+        if dry_run:
+            print(f"[DRY RUN] Would remove edited file at {target_file}")
+            return
+        
+        if os.path.exists(target_file):
+            os.remove(target_file)
