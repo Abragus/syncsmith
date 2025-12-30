@@ -1,7 +1,6 @@
 import os
 from modules.__syncsmith_module import SyncsmithModule
-from utils.paths import get_syncsmith_root
-from globals import COMPILED_FILES_DIR, FILES_DIR
+from modules.__filesync_backbone import build_entries, apply_entries, rollback_entries
 
 metadata = {
     "name": "symlink",
@@ -13,40 +12,35 @@ class SymLink(SyncsmithModule):
     def __init__(self, modulename=None):
         super().__init__(modulename)
 
+    def _apply_one(self, src, dst, dry_run=False):
+        if dry_run:
+            print(f"[DRY RUN] Would create symlink from {src} to {dst}")
+        else:
+            print(f"Creating symlink from {src} to {dst}")
+            os.symlink(src, dst)
+
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
+        raw_source = config.get("source", "")
 
-        source_file = SyncsmithModule._find_file(self, config.get("source", ""))
-        target_file = os.path.expanduser(config.get("target", ""))
-        
-        if dry_run:
-            print(f"[DRY RUN] Would link from {source_file} to {target_file}")
+        try:
+            entries = build_entries(self, raw_source, config.get("target", ""))
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}")
             return
-        
-        # If file exists, back it up
-        if os.path.exists(target_file) and not os.path.islink(target_file):
-            backup_path = target_file + ".bak"
-            print(f"Backing up existing file {target_file} to {backup_path}")
-            os.rename(target_file, backup_path)
-        else:
-            if os.path.islink(target_file):
-                os.unlink(target_file)
-        
-        print(f"Linking from {source_file} to {target_file}")
-        os.symlink(source_file, target_file)
-    
+
+        changed = apply_entries(entries, self._apply_one, dry_run=dry_run)
+        if not changed:
+            print(f"Symlinks already exist from {raw_source} to {config.get('target', '')}")
+
     def rollback(self, config, dry_run=False):
         super().rollback(config, dry_run=dry_run)
 
-        target_file = os.path.expanduser(config.get("target", ""))
-
-        if dry_run:
-            print(f"[DRY RUN] Would remove symlink at {target_file}")
+        try:
+            entries = build_entries(self, config.get("source", ""), config.get("target", ""))
+        except FileNotFoundError:
+            # nothing to rollback if source missing
+            entries = []
             return
-        
-        if os.path.islink(target_file):
-            os.unlink(target_file)
-        
-        backup_path = target_file + ".bak"
-        if os.path.exists(backup_path):
-            os.rename(backup_path, target_file)
+
+        rollback_entries(entries, remove_one=self._remove_one, dry_run=dry_run)
