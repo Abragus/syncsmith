@@ -1,0 +1,78 @@
+/* button.titlebutton for GTK3,
+windowcontrols > button for GTK4 */
+
+button.titlebutton,
+windowcontrols > button {
+  border: none;
+  color: transparent;
+}
+
+/* button.titlebutton påverkar både firefox och terminal */
+
+/* button.titlebutton {
+  min-width: 20px;
+  min-height: 20px;
+} */
+
+/* button.titlebutton {
+  min-width: 16px;
+  min-height: 16px;
+}
+
+windowcontrols > button {
+  min-width: 16px;
+  min-height: 16px;
+} */
+
+/* button.titlebutton {
+  margin: 0 2px;
+}
+
+windowcontrols > button {
+  margin: 0 5px;
+} */
+
+button.titlebutton.close,
+windowcontrols > button.close > * {
+  /* background-color: #fc5753; */
+  background-color: #FF5A52;
+}
+
+button.titlebutton.close:hover,
+windowcontrols > button.close:hover > * {
+  color: #7e0608;
+  opacity: 0.8;
+}
+
+button.titlebutton.maximize,
+windowcontrols > button.maximize > * {
+  background-color: #53C22B; 
+}
+
+button.titlebutton.maximize:hover,
+windowcontrols > button.maximize:hover > * {
+  color: #0b650d;
+  opacity: 0.8;
+}
+
+button.titlebutton.minimize,
+windowcontrols > button.minimize > * {
+  background-color: #E6C029;
+}
+
+button.titlebutton.minimize:hover,
+windowcontrols > button.minimize:hover > * {
+  color: #9a5711;
+  opacity: 0.8;
+}
+
+/* White buttons when window is not in focus (backdrop), but colored if hovering over them (:not(:hover)) */
+button.titlebutton.close:not(:hover):backdrop, 
+button.titlebutton.maximize:not(:hover):backdrop, 
+button.titlebutton.minimize:not(:hover):backdrop,
+windowcontrols > button.close:not(:hover):backdrop > *,
+windowcontrols > button.maximize:not(:hover):backdrop > *,
+windowcontrols > button.minimize:not(:hover):backdrop > * {
+  background-color: rgba(255, 255, 255, 0.25);
+  border: none;
+}

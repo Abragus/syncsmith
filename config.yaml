@@ -46,6 +46,13 @@ modules:
           - binding: '<Shift><Control>F6'
           - binding: '<Shift><Control>F7'
           - binding: '<Shift><Control>F8'
+      - name: symlink
+        source: gtk-config/*
+        target: ~/.config/gtk-3.0/
+      - name: symlink
+        source: gtk-config/*
+        target: ~/.config/gtk-4.0/
+        
   - when:
       either:
         - tag: proxmox
