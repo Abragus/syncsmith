@@ -3,7 +3,7 @@
 USER_NAME="gustav"
 INTERFACE=$1
 STATUS=$2
-TARGET_SSIDS=("eduroam" ".Oresundstag_Wi-Fi", "snalltaget")
+TARGET_SSIDS=("eduroam" ".Oresundstag_Wi-Fi", "snalltaget", "Snalltaget")
 
 # Your specific built-in speaker sink
 SPEAKER_SINK="alsa_output.pci-0000_c1_00.6.analog-stereo"
