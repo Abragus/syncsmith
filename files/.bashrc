@@ -2,6 +2,7 @@ alias ..="cd .."
 alias ls='ls --color=auto'
 alias ll="ls -alh"
 alias ld="ls -ald */"
+alias scl="systemctl"
 
 # if [ "$os" = "linux" ]; then
 # #    function code() {
