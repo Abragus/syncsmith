@@ -1,4 +1,4 @@
-local.yaml
 __pycache__/
+.vscode
 compiled_files/
 environment.yaml
