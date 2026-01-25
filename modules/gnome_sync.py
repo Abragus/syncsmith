@@ -62,7 +62,7 @@ class GnomeSync(SyncsmithModule):
             if os.path.exists(str(local_path) + '-local-previous'):
                 os.remove(str(local_path) + '-local-previous')
 
-        print(f"[gnome_sync] Applied compiled Gnome keyboard shortcuts.")
+        print(f"Applied compiled Gnome keyboard shortcuts.")
         return super().apply(config, dry_run)
     
     def generate_config_stub(self, env):
