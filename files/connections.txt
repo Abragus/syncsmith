@@ -1,3 +1,6 @@
+gustav@10.0.1.9@desktop_lund
+gustav@10.0.1.108@framework_laptop
+
 root@10.0.1.6@proxmox_lund
 root@10.0.1.20@caddy_lund
 root@10.0.1.43@home_assistant_lund
