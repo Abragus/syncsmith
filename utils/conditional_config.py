@@ -35,6 +35,11 @@ class ConditionalConfig:
 
             # 2. If dict contains "do", flatten it by returning the list directly
             if "do" in node:
+                if "sudo" in node and node["sudo"] == True:
+                    for item in node["do"]:
+                        if isinstance(item, dict):
+                            item["sudo"] = True
+
                 pruned_do = ConditionalConfig._prune(node["do"], env)
                 return pruned_do  # may be list or None
 
