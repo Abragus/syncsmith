@@ -4,6 +4,8 @@ from colorama import Fore, Style
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
 from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, COMPILED_FILES_DIR
+import subprocess
+import pwd
 
 def load_yaml(path):
     if not path.exists(): return {}
@@ -16,6 +18,9 @@ def run_modules(config, env, dry_run=False):
 
     if not COMPILED_FILES_DIR.exists():
         COMPILED_FILES_DIR.mkdir(parents=True, exist_ok=True)
+        
+    REAL_USER = os.environ.get('SUDO_USER') or pwd.getpwuid(os.getuid()).pw_name
+    REAL_HOME = pwd.getpwnam(REAL_USER).pw_dir
 
     for module_conf in modules:
         mod_file = module_path / f"{module_conf['name']}.py"
@@ -23,41 +28,44 @@ def run_modules(config, env, dry_run=False):
             print(Fore.RED + f"[ERROR] Unknown module '{module_conf['name']}' — file not found." + Style.RESET_ALL)
             continue
         
-        if (not module_conf.get("enabled", True)):
+        if not module_conf.get("enabled", True):
             print(Fore.YELLOW + f"==> Module '{module_conf['name']}' is disabled in config, skipping." + Style.RESET_ALL)
             continue
             
-        # Import the module dynamically
         module = importlib.import_module(f"modules.{module_conf['name']}")
-
-        # Filter classes defined *in this file itself* (not imported ones)
-        classes = [
-            cls for _, cls in inspect.getmembers(module, inspect.isclass)
-            if cls.__module__ == module.__name__
-        ]
+        classes = [cls for _, cls in inspect.getmembers(module, inspect.isclass) if cls.__module__ == module.__name__]
+        
         if not classes:
             print(Fore.YELLOW + f"[WARN] No class found in {module_conf['name']}.py" + Style.RESET_ALL)
             continue
 
         meta = getattr(module, "metadata", {"name": module_conf["name"]})
 
-        if (meta.get("single_instance", True) and module_conf['name'] in initiated_modules):
-            print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and has already been initiated, skipping." + Style.RESET_ALL)
+        if meta.get("single_instance", True) and module_conf['name'] in initiated_modules:
+            print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and already initiated, skipping." + Style.RESET_ALL)
             continue
         
-        if not (COMPILED_FILES_DIR / module_conf['name']).exists():
-            os.mkdir(COMPILED_FILES_DIR / module_conf['name'])
+        compiled_dir = COMPILED_FILES_DIR / module_conf['name']
+        compiled_dir.mkdir(parents=True, exist_ok=True)
         
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
-        module_class = classes[0]
-        instance = module_class()
-        instance.apply(module_conf, dry_run=dry_run)
+
+        module_env = os.environ.copy()
+        module_env["HOME"] = REAL_HOME
+        module_env["USER"] = REAL_USER
+
+        cmd = ["python3", "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]
+
+        if module_conf.get("sudo", False):
+            print(Fore.YELLOW + f"Running module as sudo user." + Style.RESET_ALL)
+            cmd = ["sudo", "-E"] + cmd
+
+        subprocess.run(cmd, env=module_env, check=True)
+        
         initiated_modules.append(module_conf['name'])
 
-        # Delete module's compiled files if empty
-        compiled_module_dir = COMPILED_FILES_DIR / module_conf['name']
-        if compiled_module_dir.exists() and not any(compiled_module_dir.iterdir()):
-            compiled_module_dir.rmdir()
+        if compiled_dir.exists() and not any(compiled_dir.iterdir()):
+            compiled_dir.rmdir()
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()
@@ -70,6 +78,7 @@ def ensure_local_env(env_file, reset=False):
         "os_version": os_info.get("VERSION_ID", "unknown"),
         "desktop_environment": os.environ.get("DESKTOP_SESSION", "unknown").strip().lower(),
         "install_dir": str(ROOT_DIR),
+        "user": os.environ.get("USER", "unknown"),
         "tags": [],
     }
 
