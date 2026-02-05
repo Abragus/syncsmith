@@ -48,6 +48,7 @@ modules:
           - binding: '<Shift><Control>F6'
           - binding: '<Shift><Control>F7'
           - binding: '<Shift><Control>F8'
+          - binding: '<Alt><Super>s'
       - name: copy
         source: gtk-config/*
         target: ~/.config/gtk-3.0/

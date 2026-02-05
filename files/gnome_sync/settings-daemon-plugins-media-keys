@@ -1,11 +1,11 @@
 [/]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom7/']
 help=@as []
 home=['<Super>e']
 magnifier=@as []
 rotate-video-lock-static=@as []
 screenreader=@as []
 volume-step=5
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom6/']
 
 [custom-keybindings/custom0]
 binding='<Shift><Control>F5'
@@ -26,17 +26,17 @@ binding='<Shift><Control>Escape'
 command='/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=missioncenter io.missioncenter.MissionCenter'
 name='Launch Mission Control'
 
-[custom-keybindings/custom5]
+[custom-keybindings/custom4]
 binding='<Super>r'
 command='gnome-terminal'
 name='Terminal'
 
-[custom-keybindings/custom6]
+[custom-keybindings/custom5]
 binding='<Shift><Control>F8'
 command='/home/gustav/.scripts/smooth_brightness.sh +50'
 name='Brightness up'
 
-[custom-keybindings/custom7]
+[custom-keybindings/custom6]
 binding='<Shift><Control>F7'
 command='/home/gustav/.scripts/smooth_brightness.sh -50'
 name='Brightness down'
