@@ -15,7 +15,7 @@ class EditFile(SyncsmithModule):
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
 
-        source_file = os.path.join(FILES_DIR, config.get("file", ""))
+        source_file = SyncsmithModule._find_file(self, "", config.get("file", ""))
         output_file = SyncsmithModule._find_file(
             self,
             config.get("output", ""),
@@ -26,8 +26,12 @@ class EditFile(SyncsmithModule):
             content = f.read()
             for modification in config.get("modifications", []):
                 if "add" in modification:
-                    print(f"Adding line: {modification.get('add', '')}")
-                    content += "\n" + modification.get("add", "")
+                    text = modification.get("add", "")
+                    if text in content:                        
+                        print(f"Text already exists, skipping add: {text}")
+                        continue
+                    print(f"Adding line: {text}")
+                    content += "\n" + text
                 elif "delete" in modification:
                     print(f"Deleting line: {modification.get('delete', '')}")
                     lines = content.splitlines()
@@ -45,7 +49,7 @@ class EditFile(SyncsmithModule):
             with open(output_file, "w") as f:
                 f.write(content)
         
-        print(f"Edited file {source_file}")
+        print(f"Finish editing file {source_file}")
 
     def rollback(self, config, dry_run=False):
         super().rollback(config, dry_run=dry_run)
