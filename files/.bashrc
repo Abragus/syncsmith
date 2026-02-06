@@ -3,6 +3,7 @@ alias ls='ls --color=auto'
 alias ll="ls -alh"
 alias ld="ls -ald */"
 alias scl="systemctl"
+alias jcl="journalctl -xeu"
 
 # if [ "$os" = "linux" ]; then
 # #    function code() {
