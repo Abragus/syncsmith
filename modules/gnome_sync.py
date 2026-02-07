@@ -264,35 +264,21 @@ class GnomeSync(SyncsmithModule):
                 global_config[section] = {k: v for k, v in entry.items() if v}
             
             # Write updated global config (overwrite path)
-            file_path = STORAGE_DIR / conf_file.replace("/", "-")
-            with open(file_path, "w") as f:
-                global_config.write(f)
+            self._write_config(global_config, str(STORAGE_DIR / conf_file.replace("/", "-")))
 
-            # Replace all appearances of " = " with "="
-            self._format_output_file(file_path)
             if globals_changed:
-                print(Fore.YELLOW + f"[gnome_sync] Wrote updated global storage: {file_path}" + Style.RESET_ALL)
+                print(Fore.YELLOW + f"[gnome_sync] Wrote updated global storage: {STORAGE_DIR / conf_file.replace('/', '-')}" + Style.RESET_ALL)
         
         except Exception as e:
             print(Fore.RED + f"[gnome_sync] Error writing updated global storage: {e}" + Style.RESET_ALL)
 
-        # ---------------------------------------------------
-        # Produce string + optional write (compiled output)
-        # ---------------------------------------------------
-        file_path = COMPILED_DIR / (conf_file.replace("/", "-") + "-local")
-        with open(file_path, "w") as f:
-            config.write(f)
+        return self._write_config(config, str(COMPILED_DIR / (conf_file.replace("/", "-") + "-local")))
 
-        self._format_output_file(file_path)
-        
+    def _write_config(self, config, path):
         buffer = StringIO()
         config.write(buffer)
-        return buffer.getvalue()
-
-    def _format_output_file(self, path):
-        with open(path, "r") as f:
-            content = f.read()
+        content = buffer.getvalue()
         new_contents = [line.replace(" = ", "=", 1) for line in content.splitlines()]
         content = "\n".join(new_contents)
-        with open(path, "w") as f:
-            f.write(content)
+        self._write_file(content, path)
+        return content
