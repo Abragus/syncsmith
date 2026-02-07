@@ -26,8 +26,9 @@ def run_modules(config, env, dry_run=False):
                         subitem.unlink()
                 item.rmdir()
         
-    REAL_USER = os.environ.get('SUDO_USER') or pwd.getpwuid(os.getuid()).pw_name
+    REAL_USER = env.get("user", "unknown")
     REAL_HOME = pwd.getpwnam(REAL_USER).pw_dir
+    RUNNING_AS = pwd.getpwuid(os.getuid()).pw_name
 
     for module_conf in modules:
         mod_file = module_path / f"{module_conf['name']}.py"
@@ -60,13 +61,17 @@ def run_modules(config, env, dry_run=False):
 
         cmd = ["python3", "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]
 
-        if module_conf.get("sudo", False):
-            print(Fore.YELLOW + f"Running module as sudo user." + Style.RESET_ALL)
-            cmd = ["sudo", "-E"] + cmd
+        expected_user = ("root" if module_conf.get("sudo", False) else REAL_USER)
+        if RUNNING_AS != expected_user:
+            cmd = ["sudo", "-u", expected_user, "-E"] + cmd
+        if module_conf.get("sudo", False) and REAL_USER != "root":
+            print(Fore.YELLOW + f"Running module '{module_conf['name']}' with sudo." + Style.RESET_ALL)
 
         subprocess.run(cmd, env=module_env, check=True)
         
         initiated_modules.append(module_conf['name'])
+    
+    os.system(f"sudo chown -R {REAL_USER}:{REAL_USER} {COMPILED_FILES_DIR}")
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()
