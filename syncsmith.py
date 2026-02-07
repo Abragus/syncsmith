@@ -16,8 +16,15 @@ def run_modules(config, env, dry_run=False):
     module_path = ROOT_DIR / "modules"
     initiated_modules = []
 
-    if not COMPILED_FILES_DIR.exists():
-        COMPILED_FILES_DIR.mkdir(parents=True, exist_ok=True)
+    if COMPILED_FILES_DIR.exists():
+        for item in COMPILED_FILES_DIR.iterdir():
+            if item.is_file():
+                item.unlink()
+            elif item.is_dir():
+                for subitem in item.iterdir():
+                    if subitem.is_file():
+                        subitem.unlink()
+                item.rmdir()
         
     REAL_USER = os.environ.get('SUDO_USER') or pwd.getpwuid(os.getuid()).pw_name
     REAL_HOME = pwd.getpwnam(REAL_USER).pw_dir
@@ -45,9 +52,6 @@ def run_modules(config, env, dry_run=False):
             print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and already initiated, skipping." + Style.RESET_ALL)
             continue
         
-        compiled_dir = COMPILED_FILES_DIR / module_conf['name']
-        compiled_dir.mkdir(parents=True, exist_ok=True)
-        
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
 
         module_env = os.environ.copy()
@@ -63,9 +67,6 @@ def run_modules(config, env, dry_run=False):
         subprocess.run(cmd, env=module_env, check=True)
         
         initiated_modules.append(module_conf['name'])
-
-        if compiled_dir.exists() and not any(compiled_dir.iterdir()):
-            compiled_dir.rmdir()
 
 def ensure_local_env(env_file, reset=False):
     os_info = get_os_release()
