@@ -27,9 +27,26 @@ def run_modules(config, env, dry_run=False):
                 item.rmdir()
         
     REAL_USER = env.get("user", "unknown")
+    REAL_USER_UID = pwd.getpwnam(REAL_USER).pw_uid
     REAL_HOME = pwd.getpwnam(REAL_USER).pw_dir
     RUNNING_AS = pwd.getpwuid(os.getuid()).pw_name
+    DIR_OWNER = pwd.getpwuid(os.stat(ROOT_DIR).st_uid).pw_name
 
+    module_env = os.environ.copy()
+    module_env["HOME"] = REAL_HOME
+    module_env["USER"] = REAL_USER
+    module_env["XDG_RUNTIME_DIR"] = f"/run/user/{REAL_USER_UID}"
+
+    # Try to find the DBUS address if it's not in the environment
+    if "DBUS_SESSION_BUS_ADDRESS" not in module_env:
+        # Common location for user session bus
+        bus_path = f"/run/user/{REAL_USER_UID}/bus"
+        if os.path.exists(bus_path):
+            module_env["DBUS_SESSION_BUS_ADDRESS"] = f"unix:path={bus_path}"
+
+    if DIR_OWNER != REAL_USER:
+        subprocess.run(["sudo", "-u", DIR_OWNER, "chown", "-R", f":{REAL_USER}", str(ROOT_DIR)], check=True)
+        subprocess.run(["sudo", "-u", DIR_OWNER, "chmod", "-R", "g+rwX", str(ROOT_DIR)], check=True)
     for module_conf in modules:
         mod_file = module_path / f"{module_conf['name']}.py"
         if not mod_file.exists():
@@ -54,10 +71,6 @@ def run_modules(config, env, dry_run=False):
             continue
         
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
-
-        module_env = os.environ.copy()
-        module_env["HOME"] = REAL_HOME
-        module_env["USER"] = REAL_USER
 
         cmd = ["python3", "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]
 
