@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, argparse, yaml, importlib, inspect
+import sys
 from colorama import Fore, Style
 from utils.system_info import get_os_release
 from utils.conditional_config import ConditionalConfig
@@ -80,7 +81,7 @@ def run_modules(config, env, dry_run=False):
         if module_conf.get("sudo", False) and REAL_USER != "root":
             print(Fore.YELLOW + f"Running module '{module_conf['name']}' with sudo." + Style.RESET_ALL)
 
-        subprocess.run(cmd, env=module_env, check=True)
+        subprocess.run(cmd, env=module_env, check=True, stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno())        
         
         initiated_modules.append(module_conf['name'])
     
