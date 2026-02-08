@@ -12,7 +12,8 @@ def load_yaml(path):
     if not path.exists(): return {}
     with open(path) as f: return yaml.safe_load(f) or {}
 
-def run_modules(config, env, dry_run=False):
+def run_modules(config, env, args):
+    dry_run = args.dry_run
     modules = config.get("modules", {})
     module_path = ROOT_DIR / "modules"
     initiated_modules = []
@@ -82,12 +83,13 @@ def run_modules(config, env, dry_run=False):
             print(Fore.YELLOW + f"Running module '{module_conf['name']}' with sudo." + Style.RESET_ALL)
 
         subprocess.run(cmd, env=module_env, check=True, stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno())        
-        
+
         initiated_modules.append(module_conf['name'])
     
     os.system(f"sudo chown -R {REAL_USER}:{REAL_USER} {COMPILED_FILES_DIR}")
 
-def ensure_local_env(env_file, reset=False):
+def ensure_local_env(env_file, args):
+    reset = args.reset_env
     os_info = get_os_release()
 
     # Auto-filled envdata values
@@ -98,7 +100,7 @@ def ensure_local_env(env_file, reset=False):
         "os_version": os_info.get("VERSION_ID", "unknown"),
         "desktop_environment": os.environ.get("DESKTOP_SESSION", "unknown").strip().lower(),
         "install_dir": str(ROOT_DIR),
-        "user": os.environ.get("USER", "unknown"),
+        "user": args.user or os.environ.get("USER", "unknown"),
         "tags": [],
     }
 
@@ -141,13 +143,14 @@ def main():
     parser.add_argument("--apply", action="store_true", help="Apply changes")
     parser.add_argument("--yes", "-y", "--auto", action="store_true", help="Use defaults noninteractively")
     parser.add_argument("--reset-env", action="store_true", help="Reset the local environment configuration file")
+    parser.add_argument("--user", help="Set the standard user for running modules")
     args = parser.parse_args()
 
-    environment = ensure_local_env(ENV_FILE, reset=args.reset_env)
+    environment = ensure_local_env(ENV_FILE, args)
     raw_config = load_yaml(CONFIG_FILE)
     parsed_config = ConditionalConfig.parse(raw_config, environment)
     
-    run_modules(parsed_config, environment, dry_run=args.dry_run)
+    run_modules(parsed_config, environment, args)
     print(Fore.GREEN + "\n[syncsmith] Done." + Style.RESET_ALL)
 
 if __name__ == "__main__":

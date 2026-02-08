@@ -182,7 +182,7 @@ chmod +x "$RUNFILE"
 
 if confirm "Run syncsmith now to apply settings?" "Running syncsmith now..." "y"; then
     echo "[syncsmith] Running syncsmith..."
-    "$RUNFILE" "$@"
+    "$RUNFILE" "$@" "--user" "$USER"
 else
     echo "[syncsmith] Installation complete. You can run syncsmith later via:"
     echo "  $RUNFILE"
