@@ -1,4 +1,5 @@
-import os
+import subprocess
+import shlex
 from modules.__syncsmith_module import SyncsmithModule
 from globals import COMPILED_FILES_DIR
 
@@ -15,11 +16,27 @@ class SystemctlExec(SyncsmithModule):
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
 
-        command = "systemctl " + config.get("command", "")
-        if dry_run:
-            print(f"[DRY RUN] Would run {command}")
+        raw_command = config.get("command", "").strip()
+        parts = shlex.split(raw_command)
+        
+        if not parts:
             return
 
-        print(f"Executing: {command}")
-        os.system(command)
-    
+        allowed_actions = ["start", "stop", "restart", "reload", "enable", "disable", "daemon-reload"]
+        action = parts[0]
+        
+        if action not in allowed_actions:
+            print(f"[ERROR] Action '{action}' is not allowed.")
+            return
+
+        full_cmd = ["systemctl"] + parts
+
+        if dry_run:
+            print(f"[DRY RUN] Would run: {' '.join(full_cmd)}")
+            return
+
+        try:
+            print(f"Executing: {' '.join(full_cmd)}")
+            subprocess.run(full_cmd, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] systemctl failed: {e}")
