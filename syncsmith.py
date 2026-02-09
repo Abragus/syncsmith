@@ -100,9 +100,26 @@ def ensure_local_env(env_file, args):
         "os_version": os_info.get("VERSION_ID", "unknown"),
         "desktop_environment": os.environ.get("DESKTOP_SESSION", "unknown").strip().lower(),
         "install_dir": str(ROOT_DIR),
-        "user": args.user or os.environ.get("USER", "unknown"),
+        "user": os.environ.get("USER", "unknown"),
         "tags": [],
     }
+
+    # Parse additional env vars from command line
+    if args.env:
+        for item in args.env:
+            if "=" not in item:
+                print(Fore.YELLOW + f"[WARN] Ignoring invalid env var '{item}' (expected format key=value)" + Style.RESET_ALL)
+                continue
+            key, value = item.split("=", 1)
+
+            if key.strip() not in default_env:
+                print(Fore.YELLOW + f"[WARN] Unrecognized env var '{key.strip()}' provided via command line, skipping." + Style.RESET_ALL)
+                continue
+
+            if key.strip() in ["tag", "tags"]:
+                default_env["tags"].append(value.strip())
+            else:
+                default_env[key.strip()] = value.strip()
 
     # Check if on proxmox host using `os.path.isdir("/etc/pve")` and append 'proxmox' tag
     if os.path.isdir("/etc/pve"):
@@ -144,6 +161,7 @@ def main():
     parser.add_argument("--yes", "-y", "--auto", action="store_true", help="Use defaults noninteractively")
     parser.add_argument("--reset-env", action="store_true", help="Reset the local environment configuration file")
     parser.add_argument("--user", help="Set the standard user for running modules")
+    parser.add_argument("--env", nargs="*", help="Additional environment variables (key=value)")
     args = parser.parse_args()
 
     environment = ensure_local_env(ENV_FILE, args)
