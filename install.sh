@@ -5,10 +5,14 @@ REPO_URL="https://github.com/Abragus/syncsmith"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 YES_FLAG=false
+AUTO_MODE=false
 for arg in "$@"; do
     case "$arg" in
         -y|--yes)
             YES_FLAG=true
+            ;;
+        --auto)
+            AUTO_MODE=true
             ;;
     esac
 done
@@ -31,14 +35,18 @@ confirm() {
         return 0
     fi
 
-    # Show the prompt
-    printf "%s %s " "[syncsmith] $prompt_msg" "$suffix"
+    if [ "$AUTO_MODE" = "true" ]; then
+        answer="$default"
+    else
+        # Show the prompt
+        printf "%s %s " "[syncsmith] $prompt_msg" "$suffix"
 
-    # Interactive read
-    if ! read -r answer < /dev/tty; then
-        # EOF or read failure — treat as decline
-        printf "\n"
-        return 1
+        # Interactive read
+        if ! read -r answer < /dev/tty; then
+            # EOF or read failure — treat as decline
+            printf "\n"
+            return 1
+        fi
     fi
 
     # Normalize empty -> default
