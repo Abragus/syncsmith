@@ -63,7 +63,8 @@ def set_permissions(filepath, config, dry_run=False):
         if dry_run:
             print(f"[DRY RUN] Would set permissions of {filepath} to {oct(expected_permissions)}")
         else:
-            os.chmod(filepath, int(expected_permissions))
+            print(f"Updating permissions of {filepath} to {expected_permissions}")
+            os.chmod(filepath, int(expected_permissions, 8))
     
     if expected_ownership:
         uid, gid = expected_ownership.split(":")
@@ -98,10 +99,7 @@ def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced
         if dst_entry.endswith("/"):
             dst_entry = str(os.path.join(dst_entry, os.path.basename(src_entry)))
 
-        if os.path.exists(dst_entry):
-            if is_synced_file(src_entry, dst_entry) and check_permissions(dst_entry, config):
-                continue
-            
+        if os.path.exists(dst_entry) and not is_synced_file(src_entry, dst_entry):
             backup_path = dst_entry + ".bak"
             if dry_run:
                 print(f"[DRY RUN] Would back up existing {dst_entry} to {backup_path}")
@@ -111,6 +109,9 @@ def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced
 
         if not os.path.exists(dst_entry):
             apply_one(src_entry, dst_entry, dry_run=dry_run)
+            changes_made = True
+
+        if not check_permissions(dst_entry, config):
             set_permissions(dst_entry, config, dry_run=dry_run)
             changes_made = True
 
