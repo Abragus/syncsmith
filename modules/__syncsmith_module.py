@@ -16,7 +16,8 @@ class SyncsmithModule:
     def generate_config_stub(self, env):
         return {}
 
-    def _find_file(self, filename):
+    @staticmethod
+    def _find_file(filename):
         if os.path.isabs(filename):
             file_location = os.path.expanduser(filename)
         else:
@@ -26,7 +27,8 @@ class SyncsmithModule:
         
         return file_location
     
-    def _read_file(self, path):
+    @staticmethod
+    def _read_file(path):
         if os.path.isabs(path):
             file_location = os.path.expanduser(path)
         else:
@@ -39,8 +41,9 @@ class SyncsmithModule:
         
         with open(file_location, "r") as f:
             return f.read()
-        
-    def _write_file(self, content, output_path):
+    
+    @staticmethod
+    def _write_file(content, output_path):
         if os.path.isabs(output_path):
             output_location = os.path.expanduser(output_path)
         else:

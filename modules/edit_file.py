@@ -38,7 +38,7 @@ class EditFile(SyncsmithModule):
             print(f"Editing file not in files dir not allowed, skipping: {config.get('file', '')}")
             return
         
-        content = SyncsmithModule._read_file(self, file_name)
+        content = SyncsmithModule._read_file(file_name)
     
         for modification in config.get("modifications", []):
             if "add" in modification:
@@ -61,7 +61,7 @@ class EditFile(SyncsmithModule):
                 )
 
         if not dry_run:
-            SyncsmithModule._write_file(self, content, config.get("output", file_name))
+            SyncsmithModule._write_file(content, config.get("output", file_name))
             print(f"Finish editing file {config.get('file', '')}")
         else:
             print(f"[DRY RUN] Would write modified content to {config.get('output', file_name)}")
@@ -69,7 +69,7 @@ class EditFile(SyncsmithModule):
     def rollback(self, config, dry_run=False):
         super().rollback(config, dry_run=dry_run)
 
-        target_file = SyncsmithModule._find_file(self, config.get("file", ""))
+        target_file = SyncsmithModule._find_file(config.get("file", ""))
         
         if dry_run:
             print(f"[DRY RUN] Would remove edited file at {target_file}")
