@@ -25,7 +25,9 @@ modules:
     url: https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-completion.bash
     path: ~/.git-completion.bash
   
-  - name: ssh_keys
+  - name: symlink
+    source: ssh_keys
+    target: ~/.ssh/authorized_keys
 
   - when:
       either:
@@ -56,6 +58,10 @@ modules:
         source: gtk-config/*
         target: ~/.config/gtk-4.0/
         
+      - name: symlink
+        source: vivaldi
+        target: ~/.config/vivaldi_userchrome
+        
   - when:
       either:
         - tag: proxmox
@@ -72,6 +78,7 @@ modules:
         file: .bashrc
         modifications:
           - add: "alias con=\"~/.local/share/connect/connections.sh\""
+
   - when:
       host: gustavs-framework-laptop
     do:
