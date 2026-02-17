@@ -1,3 +1,5 @@
+import filecmp
+import os
 import shutil
 from modules.__syncsmith_module import SyncsmithModule
 from modules.__filesync_backbone import build_entries, apply_entries, rollback_entries
@@ -18,26 +20,24 @@ class Copy(SyncsmithModule):
         else:
             print(f"Copying from {src} to {dst}")
             shutil.copy2(src, dst)
+    
+    def is_synced_file(self, src, dst):
+        if os.path.isfile(dst):
+            return filecmp.cmp(src, dst)
+        return False
 
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
-        raw_source = config.get("source", "")
 
-        try:
-            entries = build_entries(self, raw_source, config.get("target", ""))
-        except FileNotFoundError as e:
-            print(f"[ERROR] {e}")
-            return
-
-        changed = apply_entries(entries, self._apply_one, dry_run=dry_run)
+        changed = apply_entries(config, self._apply_one, self.is_synced_file, dry_run=dry_run)
         if not changed:
-            print(f"Files already copied from {raw_source} to {config.get('target', '')}")
+            print(f"Files already copied from {config.get('source', '')} to {config.get('target', '')}")
 
     def rollback(self, config, dry_run=False):
         super().rollback(config, dry_run=dry_run)
 
         try:
-            entries = build_entries(self, config.get("source", ""), config.get("target", ""))
+            entries = build_entries(config.get("source", ""), config.get("target", ""))
         except FileNotFoundError:
             # nothing to rollback if source missing
             entries = []

@@ -1,6 +1,8 @@
 import filecmp
 import os
+import shutil
 from typing import Callable, Iterable, List, Tuple
+from modules.__syncsmith_module import SyncsmithModule
 
 def _is_synced_file(src: str, dst: str) -> bool:
     """Check if dst is a symlink to src or a file with same contents."""
@@ -13,17 +15,16 @@ def _is_synced_file(src: str, dst: str) -> bool:
         return filecmp.cmp(src, dst)
     return False
 
-def build_entries(module, raw_source: str, target: str) -> List[Tuple[str, str]]:
+def build_entries(raw_source: str, target: str) -> List[Tuple[str, str]]:
     """Return list of (src, dst) pairs for either single or contents mode.
-
-    `module` must implement `_find_file(self, spec)` which returns an absolute path.
+    In contents mode (source ends with /*), all entries in the source directory are synced to target directory.
     """
     target = os.path.expanduser(target)
     contents_mode = raw_source.endswith("/*")
-    source_spec = raw_source[:-2] if contents_mode else raw_source
+    source = raw_source[:-2] if contents_mode else raw_source
 
     if contents_mode:
-        source_dir = module._find_file(source_spec)
+        source_dir = SyncsmithModule._find_file(source)
         if not os.path.isdir(source_dir):
             raise FileNotFoundError(f"Source for contents mode is not a directory: {source_dir}")
         os.makedirs(target, exist_ok=True)
@@ -34,15 +35,57 @@ def build_entries(module, raw_source: str, target: str) -> List[Tuple[str, str]]
             entries.append((src_entry, dst_entry))
         return entries
     else:
-        source_file = module._find_file(source_spec)
+        source_file = SyncsmithModule._find_file(source)
         return [(source_file, target)]
+    
+def check_permissions(filepath, config):
+    expected_ownership = config.get("ownership", None)
+    expected_permissions = config.get("permissions", None)
+    
+    if expected_ownership:
+        stat_info = os.stat(filepath)
+        uid, gid = expected_ownership.split(":")
+        if stat_info.st_uid != uid or stat_info.st_gid != gid:
+            return False
+        
+    if expected_permissions:
+        stat_info = os.stat(filepath)
+        if oct(stat_info.st_mode & 0o777) != oct(expected_permissions):
+            return False
+        
+    return True
 
+def set_permissions(filepath, config, dry_run=False):
+    expected_ownership = config.get("ownership", None)
+    expected_permissions = config.get("permissions", None)
 
-def apply_entries(entries: Iterable[Tuple[str, str]], apply_one: Callable[[str, str], None], dry_run: bool = False) -> bool:
+    if expected_permissions:
+        if dry_run:
+            print(f"[DRY RUN] Would set permissions of {filepath} to {oct(expected_permissions)}")
+        else:
+            os.chmod(filepath, int(expected_permissions))
+    
+    if expected_ownership:
+        uid, gid = expected_ownership.split(":")
+        uid = int(uid) if uid.isdigit() else shutil._get_uid(uid)
+        gid = int(gid) if gid.isdigit() else shutil._get_gid(gid)
+        if dry_run:
+            print(f"[DRY RUN] Would set ownership of {filepath} to {uid}:{gid}")
+        else:
+            os.chown(filepath, uid, gid)
+
+def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced_file: Callable[[str, str], bool], dry_run: bool = False) -> bool:
     """Generic apply routine. `apply_one(src, dst)` performs the concrete action.
 
     Returns True if any changes were made.
     """
+
+    try:
+        entries = build_entries(config.get("source", ""), config.get("target", ""))
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        return
+    
     changes_made = False
     for src_entry, dst_entry in entries:
         parent = os.path.dirname(dst_entry)
@@ -56,8 +99,8 @@ def apply_entries(entries: Iterable[Tuple[str, str]], apply_one: Callable[[str, 
             dst_entry = str(os.path.join(dst_entry, os.path.basename(src_entry)))
 
         if os.path.exists(dst_entry):
-            if _is_synced_file(src_entry, dst_entry):
-                continue 
+            if is_synced_file(src_entry, dst_entry) and check_permissions(dst_entry, config):
+                continue
             
             backup_path = dst_entry + ".bak"
             if dry_run:
@@ -68,6 +111,7 @@ def apply_entries(entries: Iterable[Tuple[str, str]], apply_one: Callable[[str, 
 
         if not os.path.exists(dst_entry):
             apply_one(src_entry, dst_entry, dry_run=dry_run)
+            set_permissions(dst_entry, config, dry_run=dry_run)
             changes_made = True
 
     return changes_made

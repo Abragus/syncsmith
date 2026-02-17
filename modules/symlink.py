@@ -19,25 +19,23 @@ class SymLink(SyncsmithModule):
             print(f"Creating symlink from {src} to {dst}")
             os.symlink(src, dst)
 
+    def is_synced_file(self, src, dst):
+        if os.path.islink(dst):
+            return os.readlink(dst) == src
+        return False
+
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
-        raw_source = config.get("source", "")
 
-        try:
-            entries = build_entries(self, raw_source, config.get("target", ""))
-        except FileNotFoundError as e:
-            print(f"[ERROR] {e}")
-            return
-
-        changed = apply_entries(entries, self._apply_one, dry_run=dry_run)
+        changed = apply_entries(config, self._apply_one, self.is_synced_file, dry_run=dry_run)
         if not changed:
-            print(f"Symlinks already exist from {raw_source} to {config.get('target', '')}")
+            print(f"Symlinks already exist from {config.get('source', '')} to {config.get('target', '')}")
 
     def rollback(self, config, dry_run=False):
         super().rollback(config, dry_run=dry_run)
 
         try:
-            entries = build_entries(self, config.get("source", ""), config.get("target", ""))
+            entries = build_entries(config.get("source", ""), config.get("target", ""))
         except FileNotFoundError:
             # nothing to rollback if source missing
             entries = []
