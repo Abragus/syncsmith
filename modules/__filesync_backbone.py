@@ -1,3 +1,4 @@
+import subprocess
 import filecmp
 import os
 import shutil
@@ -38,42 +39,56 @@ def build_entries(raw_source: str, target: str) -> List[Tuple[str, str]]:
         source_file = SyncsmithModule._find_file(source)
         return [(source_file, target)]
     
-def check_permissions(filepath, config):
-    expected_ownership = config.get("ownership", None)
-    expected_permissions = config.get("permissions", None)
-    
-    if expected_ownership:
-        stat_info = os.stat(filepath)
-        uid, gid = expected_ownership.split(":")
-        if stat_info.st_uid != uid or stat_info.st_gid != gid:
-            return False
-        
-    if expected_permissions:
-        stat_info = os.stat(filepath)
-        if oct(stat_info.st_mode & 0o777) != oct(expected_permissions):
-            return False
-        
-    return True
-
 def set_permissions(filepath, config, dry_run=False):
     expected_ownership = config.get("ownership", None)
     expected_permissions = config.get("permissions", None)
-
-    if expected_permissions:
-        if dry_run:
-            print(f"[DRY RUN] Would set permissions of {filepath} to {oct(expected_permissions)}")
-        else:
-            print(f"Updating permissions of {filepath} to {expected_permissions}")
-            os.chmod(filepath, int(expected_permissions, 8))
     
+    changes_made = False
+    stat_info = os.stat(filepath)
+
+    # Check and set permissions
+    if expected_permissions:
+        current_perms = oct(stat_info.st_mode & 0o777)
+        expected_perms = oct(int(expected_permissions, 8) & 0o777)
+        
+        if current_perms != expected_perms:
+            if dry_run:
+                print(f"[DRY RUN] Would set permissions of {filepath} to {expected_permissions}")
+            else:
+                print(f"Updating permissions of {filepath} to {expected_permissions}")
+                os.chmod(filepath, int(expected_permissions, 8))
+            changes_made = True
+            stat_info = os.stat(filepath)
+    
+    # Check and set ownership
     if expected_ownership:
         uid, gid = expected_ownership.split(":")
-        uid = int(uid) if uid.isdigit() else shutil._get_uid(uid)
-        gid = int(gid) if gid.isdigit() else shutil._get_gid(gid)
-        if dry_run:
-            print(f"[DRY RUN] Would set ownership of {filepath} to {uid}:{gid}")
-        else:
-            os.chown(filepath, uid, gid)
+        uid_int = int(uid) if uid.isdigit() else shutil._get_uid(uid)
+        gid_int = int(gid) if gid.isdigit() else shutil._get_gid(gid)
+        
+        if stat_info.st_uid != uid_int or stat_info.st_gid != gid_int:
+            if dry_run:
+                print(f"[DRY RUN] Would set ownership of {filepath} to {uid_int}:{gid_int}")
+            else:
+                os.chown(filepath, uid_int, gid_int)
+            changes_made = True
+            stat_info = os.stat(filepath)
+    
+    # Check and restore SELinux context if restorecon is available and SELinux is enabled
+    restorecon_bin = shutil.which("restorecon")
+    if restorecon_bin:
+        is_enabled = subprocess.run(["selinuxenabled"], capture_output=True).returncode == 0
+        
+        if is_enabled:
+            check = subprocess.run(["matchpathcon", "-Vq", str(filepath)])
+            if check.returncode != 0:
+                print(f"Restoring SELinux context for {filepath} using {restorecon_bin}")
+                if not dry_run:
+                    subprocess.run(["sudo", restorecon_bin, "-F", str(filepath)], 
+                                   capture_output=True)
+                changes_made = True
+    
+    return changes_made
 
 def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced_file: Callable[[str, str], bool], dry_run: bool = False) -> bool:
     """Generic apply routine. `apply_one(src, dst)` performs the concrete action.
@@ -111,8 +126,7 @@ def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced
             apply_one(src_entry, dst_entry, dry_run=dry_run)
             changes_made = True
 
-        if not check_permissions(dst_entry, config):
-            set_permissions(dst_entry, config, dry_run=dry_run)
+        if set_permissions(dst_entry, config, dry_run=dry_run):
             changes_made = True
 
     return changes_made
