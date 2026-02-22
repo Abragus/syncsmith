@@ -24,8 +24,8 @@ modules:
   - name: curl
     url: https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-completion.bash
     path: ~/.git-completion.bash
-  
-  - name: symlink
+
+  - name: copy
     source: ssh_keys
     target: ~/.ssh/authorized_keys
 
