@@ -86,6 +86,29 @@ modules:
         file: .bashrc
         modifications:
           - add: "export PATH=$PATH:/home/gustav/.cargo/bin"
+  - when:
+      not:
+        desktop_environment: unknown
+    do:
+      - when:
+          tag: laptop
+        do:
+          - name: edit_file
+            file: kanata/config.kbd
+            modifications:
+              - replace: ";; {{ laptop modifiers }}"
+                with: ";; {{ laptop modifiers }}\n  rsft up\n  up   down"
+      - name: symlink
+        source: kanata/config.kbd
+        target: ~/.config/kanata/
+
+      - name: symlink
+        source: kanata/kanata.service
+        target: ~/.config/systemd/user/kanata.service
+      - name: systemctl_exec
+        command: "daemon-reload --user"
+      - name: systemctl_exec
+        command: "enable --user --now kanata.service"
           
   - name: symlink
     source: .bashrc

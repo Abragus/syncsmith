@@ -1,0 +1,16 @@
+(defsrc
+  caps rsft up
+)
+
+;; (defalias
+;;   ;; tap-hold <tap-timeout> <hold-timeout> <tap-action> <hold-action>
+;;   ;; If held for > 200ms, it triggers CapsLock. 
+;;   ;; If tapped and released within 200ms, it triggers Enter.
+;;   cap_logic (tap-hold 200 200 ret caps)
+;; )
+
+(deflayermap (base)
+  caps (fork ret caps (lmet))
+  
+  ;; {{ laptop modifiers }}
+)

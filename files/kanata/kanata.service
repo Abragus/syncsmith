@@ -1,0 +1,11 @@
+[Unit]
+Description=Kanata
+
+[Service]
+Environment=DISPLAY=:0
+Type=simple
+ExecStart=/usr/local/bin/kanata --cfg /home/gustav/.config/kanata/config.kbd
+Restart=always
+
+[Install]
+WantedBy=default.target
