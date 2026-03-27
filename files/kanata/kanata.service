@@ -1,8 +1,18 @@
 [Unit]
 Description=Kanata
+# Wait for the system to be ready for local files and devices
+After=local-fs.target
+# If you use a specific input group, ensure udev has settled
+Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service
 
 [Service]
+# Can be removed?
 Environment=DISPLAY=:0
+# Some systems need uinput explicitly loaded if it's not built-in
+# ExecStartPre=/usr/bin/pkexec /usr/bin/modprobe uinput
+# Add a small delay to allow udev rules to apply permissions to /dev/uinput
+# RestartSec=3
 Type=simple
 ExecStart=/usr/local/bin/kanata --cfg /home/gustav/.config/kanata/config.kbd
 Restart=always
