@@ -4,6 +4,8 @@ alias ll="ls -alh"
 alias ld="ls -ald */"
 alias scl="systemctl"
 alias jcl="journalctl -xeu"
+alias sclu="systemctl --user"
+alias jclu="journalctl --user -xeu"
 alias updn="sudo dnf update -y; sudo flatpak update -y"
 
 new_line() {
