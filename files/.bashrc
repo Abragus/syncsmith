@@ -7,6 +7,7 @@ alias jcl="journalctl -xeu"
 alias sclu="systemctl --user"
 alias jclu="journalctl --user -xeu"
 alias updn="sudo dnf update -y; sudo flatpak update -y"
+alias cop="wl-copy"
 
 new_line() {
     printf "\n> "
