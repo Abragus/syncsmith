@@ -18,16 +18,6 @@ def run_modules(config, env, args):
     module_path = ROOT_DIR / "modules"
     initiated_modules = []
 
-    if COMPILED_FILES_DIR.exists():
-        for item in COMPILED_FILES_DIR.iterdir():
-            if item.is_file():
-                item.unlink()
-            elif item.is_dir():
-                for subitem in item.iterdir():
-                    if subitem.is_file():
-                        subitem.unlink()
-                item.rmdir()
-        
     REAL_USER = env.get("user", "unknown")
     REAL_USER_UID = pwd.getpwnam(REAL_USER).pw_uid
     REAL_HOME = pwd.getpwnam(REAL_USER).pw_dir
@@ -72,6 +62,17 @@ def run_modules(config, env, args):
             print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and already initiated, skipping." + Style.RESET_ALL)
             continue
         
+        # Clear compiled files for this module unless marked as persistent
+        if not meta.get("persistent_compiled_files", False):
+            for item in COMPILED_FILES_DIR.glob(f"{module_conf['name']}*"):
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    for subitem in item.iterdir():
+                        if subitem.is_file():
+                            subitem.unlink()
+                    item.rmdir()
+
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
 
         cmd = ["python3", "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]

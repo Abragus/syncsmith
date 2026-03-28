@@ -14,6 +14,7 @@ metadata = {
     "name": "gnome_sync",
     "description": "Sync Gnome configuration",
     "single_instance": True,
+    "persistent_compiled_files": True,
 }
 
 class GnomeSync(SyncsmithModule):
@@ -184,7 +185,7 @@ class GnomeSync(SyncsmithModule):
                 
             if name in locals_prev and name not in locs:
                 # Was removed locally -> remove from global as well
-                if name in exceptions_by_name:
+                if name in exceptions_by_name or not set(exceptions_by_binding.keys()).isdisjoint([glob.get("binding", ""), loc.get("binding", ""), loc_prev.get("binding", "")]):
                     print(Fore.YELLOW + f"[gnome_sync] Detected removal of custom keybinding '{name}' but it is in exceptions, preserving in global storage." + Style.RESET_ALL)
                 else: 
                     print(Fore.YELLOW + f"[gnome_sync] Detected removal of custom keybinding '{name}', removing from global storage." + Style.RESET_ALL)
@@ -195,7 +196,7 @@ class GnomeSync(SyncsmithModule):
             elif name in exceptions_by_name or (loc.get("binding", "").replace("'", "") in exceptions_by_binding.keys()):
                 final_custom_entries.append({
                     "name": name,
-                    "binding": exceptions_by_name.get(name, {}).get("binding", loc.get("binding", "")),
+                    "binding": exceptions_by_name.get(name, {}).get("binding", loc.get("binding", "''")),
                     "command": exceptions_by_name.get(name, {}).get("command", loc.get("command", "")),
                 })
 
@@ -204,7 +205,7 @@ class GnomeSync(SyncsmithModule):
                 print(Fore.YELLOW + f"[gnome_sync] Detected change in custom keybinding '{name}'; updating global storage file." + Style.RESET_ALL)
                 final_custom_entries.append({
                     "name": name,
-                    "binding": loc.get("binding", ""),
+                    "binding": loc.get("binding", "''"),
                     "command": loc.get("command", ""),
                 })
                 globs_new[name] = loc
@@ -214,9 +215,12 @@ class GnomeSync(SyncsmithModule):
             else:
                 final_custom_entries.append({
                     "name": name,
-                    "binding": glob.get("binding", ""),
+                    "binding": glob.get("binding", "''"),
                     "command": glob.get("command", ""),
                 })
+
+        # Sort final_custom_entries in alphabetical order by name
+        final_custom_entries.sort(key=lambda x: x["name"])
 
         # ---------------------------------------------------
         # Build config root + custom-keybindings index list for compiled output
@@ -235,8 +239,8 @@ class GnomeSync(SyncsmithModule):
             section = f"custom-keybindings/custom{i}"
             config[section] = {}
             for field in ("binding", "command", "name"):
-                if kb.get(field, ""):
-                    config[section][field] = kb[field]
+                config[section][field] = kb.get(field, "@as []")
+            # print(f"[gnome_sync] Final custom keybinding '{kb.get('name', '')}': binding={config[section]['binding']}, command={config[section]['command']}")
 
         # ---------------------------------------------------
         # Persist global storage using `new_global_normal` and `globs_new`
