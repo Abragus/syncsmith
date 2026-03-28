@@ -46,11 +46,11 @@ modules:
     do:
       - name: gnome_sync
         shortcut_exceptions:
-          - binding: '<Shift><Control>F5'
-          - binding: '<Shift><Control>F6'
-          - binding: '<Shift><Control>F7'
-          - binding: '<Shift><Control>F8'
-          - binding: '<Alt><Super>s'
+          - name: 'Switch to Google Home Speakers'
+          - name: 'Switch to Headphones'
+          - name: 'Switch to laptop speakers'
+          - name: 'Brightness up'
+          - name: 'Brightness down'
       - name: copy
         source: gtk-config/*
         target: ~/.config/gtk-3.0/
@@ -104,11 +104,11 @@ modules:
 
       - name: symlink
         source: kanata/kanata.service
-        target: ~/.config/systemd/user/kanata.service
+        target: ~/.config/systemd/gustav/kanata.service
       - name: systemctl_exec
         command: "daemon-reload --user"
       - name: systemctl_exec
-        command: "enable --user kanata.service"
+        command: "enable --user --now kanata.service"
       - name: systemctl_exec
         command: "start --user kanata.service"
           
