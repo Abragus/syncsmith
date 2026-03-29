@@ -105,6 +105,12 @@ modules:
       - name: symlink
         source: kanata/kanata.service
         target: ~/.config/systemd/gustav/kanata.service
+      - name: copy
+        source: kanata/99-kanata.rules
+        target: /etc/udev/rules.d/
+        sudo: true
+        ownership: root:root
+        permissions: '644'
       - name: systemctl_exec
         command: "daemon-reload --user"
       - name: systemctl_exec
