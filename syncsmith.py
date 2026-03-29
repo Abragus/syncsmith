@@ -29,6 +29,11 @@ def run_modules(config, env, args):
     module_env["USER"] = REAL_USER
     module_env["XDG_RUNTIME_DIR"] = f"/run/user/{REAL_USER_UID}"
 
+    # Delete all individual files from compiled_files directory that are not in the current modules list to prevent stale files from previous runs
+    for item in COMPILED_FILES_DIR.iterdir():
+        if item.is_file():
+            item.unlink()
+
     # Try to find the DBUS address if it's not in the environment
     if "DBUS_SESSION_BUS_ADDRESS" not in module_env:
         # Common location for user session bus
@@ -81,7 +86,7 @@ def run_modules(config, env, args):
         if RUNNING_AS != expected_user:
             cmd = ["sudo", "-u", expected_user, "-E"] + cmd
         if module_conf.get("sudo", False) and REAL_USER != "root":
-            print(Fore.YELLOW + f"Running module '{module_conf['name']}' with sudo." + Style.RESET_ALL)
+            print(Fore.YELLOW + f"Running module using sudo." + Style.RESET_ALL)
 
         subprocess.run(cmd, env=module_env, check=True, stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno())        
 
