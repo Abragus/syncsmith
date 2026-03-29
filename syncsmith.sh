@@ -36,5 +36,6 @@ $INSTALL_DIR/.venv/bin/python $INSTALL_DIR/syncsmith.py "$@"
 
 if ! [ "$REPAIR_ATTEMPTED" = true ] && { [ $? -ne 0 ] && [ "$AUTO_MODE" = true ]; } || [ "$REPAIR" = true ]; then
     echo "Running automatic repair..."
+    sudo rm -rf .venv
     sudo /opt/syncsmith/install.sh --auto --repair-attempted
 fi
