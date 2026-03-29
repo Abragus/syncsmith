@@ -25,6 +25,14 @@ modules:
     url: https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-completion.bash
     path: ~/.git-completion.bash
 
+  - when:
+      tag: proxmox
+    do:
+      - name: edit_file
+        file: ssh_keys
+        modifications:
+          - add: "\n# NextCloud Tving \nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQJ/xR1kvDPmbG2fSWBAWNR1QuPzYuBQF2n0iZM3oHAOnb88FEUoFpVKXvtahPy4SipaxGrf51x8Skjb2QEmr3/fGj+l62Vn76sr10ujWkVmxueKSOOf7hKRWc2jwftl9cexZzc/ZvpO1QB6VgFHa9f3ymxzMz5wDSRjjxsqu3Rc4GiJI4LqlfaXgu6Hd34TvsSu2XCnqMcWuhByoDAMphCWSvVzdEQuxhEDxtIs7xxSCvM++ui8YEF4pMDWCX1r4uFM35QOWIaR3328yEZSAMGnI0fcWRYMSJgV96vGx1uk9uVMDGRoTla+/UUG+qg3y2v27AMpcueyOziB1oG2MX0ZSZQeWwgFKo2nWr6T6MEHumSHpilOU4SVmIq1d2mWq2So6w45zcv7kIPEXdTZCQeDoj+cjP8b07Z29KSe85w1bHOXhdj9mRd1rBl3QKtuFxbkXkcaC+jPEi1s6TINDfXJPWOso8YTzK9MRH/SC86GqgGjolnvQ3WcrGVBizvmc= pi@nextcloudpi"
+
   - name: copy
     source: ssh_keys
     target: ~/.ssh/authorized_keys
