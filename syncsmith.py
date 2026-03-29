@@ -7,6 +7,7 @@ from utils.conditional_config import ConditionalConfig
 from globals import ROOT_DIR, ENV_FILE, CONFIG_FILE, COMPILED_FILES_DIR
 import subprocess
 import pwd
+import shutil
 
 def load_yaml(path):
     if not path.exists(): return {}
@@ -29,10 +30,12 @@ def run_modules(config, env, args):
     module_env["USER"] = REAL_USER
     module_env["XDG_RUNTIME_DIR"] = f"/run/user/{REAL_USER_UID}"
 
-    # Delete all individual files from compiled_files directory that are not in the current modules list to prevent stale files from previous runs
+    # Delete all loose files from compiled_files directory
     for item in COMPILED_FILES_DIR.iterdir():
         if item.is_file():
             item.unlink()
+        elif item.is_dir() and item.name not in [mod['name'] for mod in modules]:
+            shutil.rmtree(item)
 
     # Try to find the DBUS address if it's not in the environment
     if "DBUS_SESSION_BUS_ADDRESS" not in module_env:
