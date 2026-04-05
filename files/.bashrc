@@ -3,9 +3,14 @@ alias ls='ls --color=auto'
 alias ll="ls -alh"
 alias ld="ls -ald */"
 alias scl="systemctl"
-alias jcl="journalctl -xeu"
 alias sclu="systemctl --user"
-alias jclu="journalctl --user -xeu"
+jcl() {
+    journalctl -eu "$1" | less +G
+}
+
+jclu() {
+    journalctl --user -eu "$1" | less +G
+}
 alias updn="sudo dnf update -y; sudo flatpak update -y"
 alias cop="wl-copy"
 
