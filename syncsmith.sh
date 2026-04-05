@@ -27,7 +27,8 @@ cd "$INSTALL_DIR" || { echo "[syncsmith] Failed to enter install directory"; exi
 
 if [ "$AUTO_MODE" = true ]; then
     git stash -u
-    git pull -f origin main
+    git fetch origin main
+    git reset --hard origin/main
 else
     git pull origin main
 fi
