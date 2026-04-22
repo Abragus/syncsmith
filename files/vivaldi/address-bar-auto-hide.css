@@ -1,0 +1,33 @@
+/* 1. The Floating Container */
+.toolbar-addressbar {
+    position: fixed !important;
+    top: 44px;
+    left: 10px;
+    right: 10px;
+    
+    /* Aesthetics */
+    background: var(--colorBgDarker);
+    border: 1px solid var(--colorBorder);
+    border-radius: 8px;
+    z-index: 999;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+
+    /* Hidden State (No 'visibility' so Alt+D still works) */
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    
+    transition: 0.2s ease-out;
+}
+
+/* 2. Show on Focus */
+.toolbar-addressbar:focus-within {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* 3. Ensure webpage is at the top */
+#main {
+    padding-top: 0px !important;
+}
