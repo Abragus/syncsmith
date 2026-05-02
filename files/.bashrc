@@ -14,6 +14,14 @@ jclu() {
 alias updn="sudo dnf update -y; sudo flatpak update -y"
 alias cop="wl-copy"
 
+git() {
+  if [[ "$1" =~ ^(add|restore|commit|ci|push|pull)$ ]]; then
+    command git "$@" && command git status
+  else
+    command git "$@"
+  fi
+}
+
 new_line() {
     printf "\n> "
 }
