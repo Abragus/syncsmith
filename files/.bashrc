@@ -11,7 +11,7 @@ jcl() {
 jclu() {
     journalctl --user -eu "$1" | less +G
 }
-alias updn="sudo dnf update -y; sudo flatpak update -y"
+alias updn="sudo tmux new-session \"dnf update -y; read\" \; split-window -h \"flatpak update -y; read\""
 alias cop="wl-copy"
 
 git() {
