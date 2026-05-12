@@ -28,20 +28,26 @@ class ConditionalConfig:
         # Case 2: dict -> evaluate when:, then handle do:, then recurse
         if isinstance(node, dict):
             # 1. Handle when:
+            condition_fulfilled = True
             if "when" in node:
-                if not ConditionalConfig._evaluate_condition(node["when"], env):
-                    return None
+                condition_fulfilled = ConditionalConfig._evaluate_condition(node["when"], env)
                 node = {k: v for k, v in node.items() if k != "when"}
 
+            if "sudo" in node and node["sudo"] == True:
+                for item in node.get("do", []) + node.get("else", []):
+                    if isinstance(item, dict):
+                        item["sudo"] = True
             # 2. If dict contains "do", flatten it by returning the list directly
-            if "do" in node:
-                if "sudo" in node and node["sudo"] == True:
-                    for item in node["do"]:
-                        if isinstance(item, dict):
-                            item["sudo"] = True
+            if condition_fulfilled and "do" in node:
 
                 pruned_do = ConditionalConfig._prune(node["do"], env)
                 return pruned_do  # may be list or None
+
+            elif not condition_fulfilled and "else" in node:
+                pruned_else = ConditionalConfig._prune(node["else"], env)
+                return pruned_else  # may be list or None
+            elif not condition_fulfilled:
+                return None
 
             # 3. Normal dict recursion
             new_dict = {}
