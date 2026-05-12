@@ -43,13 +43,31 @@ class EditFile(SyncsmithModule):
         for modification in config.get("modifications", []):
             if "add" in modification:
                 text = modification.get("add", "")
+
                 if text in content:                        
                     print(f"Text already exists, skipping add: {text}")
                     continue
-                print(f"Adding line: {text}")
+
+                if "after" in modification:
+                    after_text = modification.get("after", "")
+                    if after_text not in content:
+                        print(f"Could not find text to add after ({after_text}), skipping add: {text}")
+                        continue
+                    print(f"Adding content after '{after_text}': {text}")
+                    content = content.replace(after_text, after_text + "\n" + text)
+
+                elif "before" in modification:
+                    before_text = modification.get("before", "")
+                    if before_text not in content:
+                        print(f"Could not find text to add before ({before_text}), skipping add: {text}")
+                        continue
+                    print(f"Adding content before '{before_text}': {text}")
+                    content = content.replace(before_text, text + "\n" + before_text)
+
+                print(f"Adding content: {text}")
                 content += "\n" + text
             elif "delete" in modification:
-                print(f"Deleting line: {modification.get('delete', '')}")
+                print(f"Deleting content: {modification.get('delete', '')}")
                 lines = content.splitlines()
                 lines = [line for line in lines if line.strip() != modification.get("delete", "").strip()]
                 content = "\n".join(lines)
