@@ -173,15 +173,13 @@
 }
 /* friends */
 .main-buddyFeed-addFriendsContainer {
-  display: none;
-  /* background-color: var(--spice-sidebar); */
+  background-color: var(--spice-sidebar);
 }
 .main-buddyFeed-friendActivity {
-  display: none;
-  /* padding: 8px;
+  padding: 8px;
   margin: 8px;
   background: var(--spice-card);
-  border-radius: var(--br-1); */
+  border-radius: var(--br-1);
 }
 .HdRGC,
 .eEsqRZ,
