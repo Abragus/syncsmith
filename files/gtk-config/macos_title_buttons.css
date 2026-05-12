@@ -5,6 +5,7 @@ button.titlebutton,
 windowcontrols > button {
   border: none;
   color: transparent;
+  transition: all 0.3s ease-in-out;
 }
 
 /* button.titlebutton påverkar både firefox och terminal */
@@ -34,7 +35,6 @@ windowcontrols > button {
 
 button.titlebutton.close,
 windowcontrols > button.close > * {
-  /* background-color: #fc5753; */
   background-color: #FF5A52;
 }
 
