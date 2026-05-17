@@ -1,0 +1,4 @@
+/* Hide overlay info bubble */
+.overlayinfobubble {
+	display: none;
+}
