@@ -15,7 +15,7 @@ alias updn="sudo tmux new-session \"dnf update -y; read\" \; split-window -h \"f
 alias cop="wl-copy"
 
 git() {
-  if [[ "$1" =~ ^(add|restore|commit|ci|push|pull)$ ]]; then
+  if [[ "$1" =~ ^(add|restore|commit|ci|push|pull|diff)$ ]]; then
     command git "$@" && command git status
   else
     command git "$@"
