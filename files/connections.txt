@@ -10,6 +10,7 @@ root@10.0.1.10@technitium_lund
 root@10.0.1.12@jellyfin_lund
 root@10.0.1.24@qbitt_lund
 root@10.0.1.13@arr_lund
+root@10.0.1.18@minecraft_lund
 
 root@10.0.1.21@proxmox_tving
 root@10.0.1.20@caddy_tving
