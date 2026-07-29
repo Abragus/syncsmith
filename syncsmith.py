@@ -30,11 +30,14 @@ def run_modules(config, env, args):
     module_env["USER"] = REAL_USER
     module_env["XDG_RUNTIME_DIR"] = f"/run/user/{REAL_USER_UID}"
 
+    # Create compiled_files directory if it doesn't exist
+    COMPILED_FILES_DIR.mkdir(parents=True, exist_ok=True)
+
     # Delete all loose files from compiled_files directory
     for item in COMPILED_FILES_DIR.iterdir():
         if item.is_file():
             item.unlink()
-        elif item.is_dir() and item.name not in [mod['name'] for mod in modules]:
+        elif item.is_dir() and item.name not in [mod.get("name", "") for mod in modules]:
             shutil.rmtree(item)
 
     # Try to find the DBUS address if it's not in the environment
