@@ -19,12 +19,34 @@ class Copy(SyncsmithModule):
             print(f"[DRY RUN] Would copy {src} to {dst}")
         else:
             print(f"Copying from {src} to {dst}")
-            shutil.copy2(src, dst)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, dst)
     
     def is_synced_file(self, src, dst):
+        if os.path.isdir(src) and os.path.isdir(dst):
+            return self._directories_match(src, dst)
         if os.path.isfile(dst):
-            return filecmp.cmp(src, dst)
+            return os.path.isfile(src) and filecmp.cmp(src, dst, shallow=False)
         return False
+
+    def _directories_match(self, src, dst):
+        comparison = filecmp.dircmp(src, dst)
+        if (
+            comparison.left_only
+            or comparison.right_only
+            or comparison.common_funny
+            or comparison.diff_files
+            or comparison.funny_files
+        ):
+            return False
+        return all(
+            self._directories_match(
+                os.path.join(src, name), os.path.join(dst, name)
+            )
+            for name in comparison.common_dirs
+        )
 
     def apply(self, config, dry_run=False):
         super().apply(config, dry_run=dry_run)
