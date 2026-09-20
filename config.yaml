@@ -66,6 +66,14 @@ modules:
         source: gtk-config/*
         target: ~/.config/gtk-4.0/
         
+      - name: copy
+        source: gtk-themes/shell/*
+        target: ~/.local/share/themes/
+        
+      - name: copy
+        source: gtk-themes/icons/*
+        target: ~/.local/share/icons/
+        
       - name: symlink
         source: vivaldi
         target: ~/.config/vivaldi_userchrome
