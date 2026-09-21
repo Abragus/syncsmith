@@ -106,14 +106,6 @@ modules:
       not:
         desktop_environment: unknown
     do:
-      - when:
-          tag: laptop
-        do:
-          - name: edit_file
-            file: kanata/config.kbd
-            modifications:
-              - replace: ";; {{ laptop modifiers }}"
-                with: ";; {{ laptop modifiers }}\n  rsft up\n  up   down"
       - name: symlink
         source: kanata/config.kbd
         target: ~/.config/kanata/

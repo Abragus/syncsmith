@@ -1,5 +1,5 @@
 (defsrc
-  caps lmet rsft up
+  caps lmet rsft up pgdn
 )
 
 ;; (defalias
@@ -12,5 +12,11 @@
 (deflayermap (base)
   caps (fork ret caps (lmet))
   
-  ;; {{ laptop modifiers }}
+  {% if 'laptop' in tags -%}
+  rsft up
+  up   down
+  {% elif host == 'gdesktop' -%}
+  rsft home
+  pgdn end
+  {% endif %}
 )
