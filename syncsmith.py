@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, argparse, yaml, importlib, inspect
+import os, argparse, json, yaml, importlib, inspect
 import sys
 from colorama import Fore, Style
 from utils.system_info import get_os_release
@@ -29,15 +29,28 @@ def run_modules(config, env, args):
     module_env["HOME"] = REAL_HOME
     module_env["USER"] = REAL_USER
     module_env["XDG_RUNTIME_DIR"] = f"/run/user/{REAL_USER_UID}"
+    module_env["SYNCSMITH_ENV"] = json.dumps(env)
 
     # Create compiled_files directory if it doesn't exist
     COMPILED_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Delete all loose files from compiled_files directory
+    persistent_module_names = set()
+    for module_conf in modules:
+        mod_file = module_path / f"{module_conf['name']}.py"
+        if not mod_file.exists():
+            continue
+        module = importlib.import_module(f"modules.{module_conf['name']}")
+        meta = getattr(module, "metadata", {})
+        if meta.get("persistent_compiled_files", False):
+            persistent_module_names.add(module_conf["name"])
+
+    # Clear generated outputs, preserving directories owned by persistent modules.
     for item in COMPILED_FILES_DIR.iterdir():
+        if item.name in persistent_module_names:
+            continue
         if item.is_file():
             item.unlink()
-        elif item.is_dir() and item.name not in [mod.get("name", "") for mod in modules]:
+        elif item.is_dir():
             shutil.rmtree(item)
 
     # Try to find the DBUS address if it's not in the environment
@@ -73,20 +86,9 @@ def run_modules(config, env, args):
             print(Fore.YELLOW + f"[WARN] Module '{module_conf['name']}' is single-instance and already initiated, skipping." + Style.RESET_ALL)
             continue
         
-        # Clear compiled files for this module unless marked as persistent
-        if not meta.get("persistent_compiled_files", False):
-            for item in COMPILED_FILES_DIR.glob(f"{module_conf['name']}*"):
-                if item.is_file():
-                    item.unlink()
-                elif item.is_dir():
-                    for subitem in item.iterdir():
-                        if subitem.is_file():
-                            subitem.unlink()
-                    item.rmdir()
-
         print(Fore.CYAN + f"==> Running module: {module_conf['name']}" + Style.RESET_ALL)
 
-        cmd = ["python3", "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]
+        cmd = [sys.executable, "-c", f"import sys; sys.path.insert(0, '{ROOT_DIR}'); from modules.{module_conf['name']} import *; {classes[0].__name__}().apply({module_conf}, dry_run={dry_run})"]
 
         expected_user = ("root" if module_conf.get("sudo", False) else REAL_USER)
         if RUNNING_AS != expected_user:

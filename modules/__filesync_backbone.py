@@ -104,6 +104,7 @@ def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced
     
     changes_made = False
     for src_entry, dst_entry in entries:
+        src_entry = SyncsmithModule._render_file(src_entry)
         parent = os.path.dirname(dst_entry)
         if parent and not os.path.exists(parent):
             if dry_run:
@@ -118,6 +119,14 @@ def apply_entries(config: dict, apply_one: Callable[[str, str], None], is_synced
             backup_path = dst_entry + ".bak"
             if dry_run:
                 print(f"[DRY RUN] Would back up existing {dst_entry} to {backup_path}")
+            elif os.path.exists(backup_path):
+                if os.path.islink(dst_entry) or os.path.isfile(dst_entry):
+                    os.unlink(dst_entry)
+                elif os.path.isdir(dst_entry):
+                    shutil.rmtree(dst_entry)
+                else:
+                    os.remove(dst_entry)
+
             else:
                 print(f"Backing up existing file {dst_entry} to {backup_path}")
                 os.rename(dst_entry, backup_path)
@@ -151,6 +160,7 @@ def rollback_entries(entries: Iterable[Tuple[str, str]], remove_one: Callable[[s
         remove_one = _default_remove
 
     for src_entry, dst_entry in entries:
+        src_entry = SyncsmithModule._render_file(src_entry)
         if dry_run:
             print(f"[DRY RUN] Would remove {dst_entry} and restore backup if present")
             continue
