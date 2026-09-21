@@ -1531,8 +1531,8 @@ StEntry:focus {
 
 #panel {
 	background-color: rgba(24, 22, 24, 1);
-	height: 34px;
-	font-size: 13px;
+	height: {{ '50px' if 'laptop' in tags else '34px' }};
+	font-size: {{ '20px' if 'laptop' in tags else '14px' }};
 	box-shadow: none;
 }
 
@@ -1601,7 +1601,7 @@ StEntry:focus {
 
 /* battery percentage */
 #panel .power-status.panel-status-indicators-box {
-	font-size: 12px;
+	font-size: {{ '20px' if 'laptop' in tags else '13px' }};
 }
 
 
@@ -1761,7 +1761,7 @@ StEntry:focus {
 .quick-menu-toggle .quick-toggle, /* 44-47 */
 .quick-toggle-has-menu .quick-toggle { /* 48+ */
 	color: rgba(248, 236, 248, 1);
-	border-radius: 14px;
+	border-radius: 18px;
 	background-color: rgba(244, 189, 244, 0.08);
 	transition-duration: 100ms;
 }
@@ -1775,14 +1775,14 @@ StEntry:focus {
 
 /* adjust borders if quick toggle has expandable menu button (quick-toggle-arrow)44-47] (quick-toggle-menu-button)[48+] */
 .quick-menu-toggle .quick-toggle:ltr,
-.quick-toggle-has-menu .quick-toggle:ltr { border-radius: 14px 0 0 14px; }
+.quick-toggle-has-menu .quick-toggle:ltr { border-radius: 18px 0 0 18px; }
 .quick-menu-toggle .quick-toggle:rtl,
-.quick-toggle-has-menu .quick-toggle:rtl { border-radius: 0 14px 14px 0; }
+.quick-toggle-has-menu .quick-toggle:rtl { border-radius: 0 18px 18px 0; }
 
 /* if quick toggle has no expandable menu button (quick-toggle-arrow)[44+] */
 .quick-menu-toggle .quick-toggle:last-child,
 .quick-toggle-has-menu .quick-toggle:last-child {
-	border-radius: 14px;
+	border-radius: 18px;
 }
 
 .quick-menu-toggle .quick-toggle-arrow,
@@ -1793,13 +1793,13 @@ StEntry:focus {
 /* adjust borders in expandable menu button */
 .quick-menu-toggle .quick-toggle-arrow:ltr,
 .quick-toggle-has-menu .quick-toggle-menu-button:ltr {
-	border-radius: 0 14px 14px 0;
+	border-radius: 0 18px 18px 0;
 	border-left-width: 2px;
 }
 
 .quick-menu-toggle .quick-toggle-arrow:rtl,
 .quick-toggle-has-menu .quick-toggle-menu-button:rtl {
-	border-radius: 14px 0 0 14px;
+	border-radius: 18px 0 0 18px;
 	border-right-width: 2px;
 }
 
@@ -1954,12 +1954,12 @@ https://gitlab.gnome.org/GNOME/gnome-shell/-/commit/beb77f58243265a6cc62b720a5b0
 .screenshot-ui-type-button { /* Selection / Screen / Window */
 	color: rgba(248, 236, 248, 1);
 	background-color: transparent;
-	border-radius: 14px;
+	border-radius: 18px;
 	transition-duration: 100ms;
 }
 
 .screenshot-ui-show-pointer-button {
-	border-radius: 12px;
+	border-radius: 16px;
 }
 
 .screenshot-ui-show-pointer-button:hover,
@@ -2328,11 +2328,11 @@ https://gitlab.gnome.org/GNOME/gnome-shell/-/commit/beb77f58243265a6cc62b720a5b0
     background-color: rgba(40, 37, 40, 1);
 }
 #panel {
-    height: 36px;
-    font-size: 14px;
+	height: {{ '50px' if 'laptop' in tags else '34px' }};
+	font-size: {{ '20px' if 'laptop' in tags else '14px' }};
 }
 
 .panel-button,
 .panel-button .clock {
-    border-radius: 10px;
+    border-radius: 20px;
 }
