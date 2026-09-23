@@ -1,22 +1,24 @@
 (defsrc
-  caps lmet rsft up pgdn
+{% if 'laptop' in tags -%}
+  caps lmet rsft up
+{% elif host == 'gdesktop' -%}
+  caps lmet rsft pgdn pgup home end
+{% else %}
+  caps lmet
+{% endif %}
 )
-
-;; (defalias
-;;   ;; tap-hold <tap-timeout> <hold-timeout> <tap-action> <hold-action>
-;;   ;; If held for > 200ms, it triggers CapsLock. 
-;;   ;; If tapped and released within 200ms, it triggers Enter.
-;;   cap_logic (tap-hold 200 200 ret caps)
-;; )
 
 (deflayermap (base)
   caps (fork ret caps (lmet))
   
-  {% if 'laptop' in tags -%}
+{% if 'laptop' in tags -%}
   rsft up
   up   down
-  {% elif host == 'gdesktop' -%}
+{% elif host == 'gdesktop' -%}
   rsft home
   pgdn end
-  {% endif %}
+  pgup rsft
+  home pgup
+  end pgdn
+{% endif %}
 )
