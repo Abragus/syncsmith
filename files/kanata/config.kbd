@@ -1,6 +1,6 @@
 (defsrc
 {% if 'laptop' in tags -%}
-  caps lmet rsft up
+  caps lmet rsft up brdn brup
 {% elif host == 'gdesktop' -%}
   caps lmet rsft pgdn pgup home end
 {% else %}
@@ -8,16 +8,30 @@
 {% endif %}
 )
 
+;; Smooth brightness control
+{% if 'laptop' in tags -%}
+  (defalias
+    smooth-down C-S-f7
+    
+    smooth-up C-S-f8
+  )
+{% endif %}
+
 (deflayermap (base)
   caps (fork ret caps (lmet))
   
 {% if 'laptop' in tags -%}
   rsft up
   up   down
+
+  brdn @smooth-down
+  brup @smooth-up
 {% elif host == 'gdesktop' -%}
   rsft home
   pgdn end
+
   pgup rsft
+  
   home pgup
   end pgdn
 {% endif %}
