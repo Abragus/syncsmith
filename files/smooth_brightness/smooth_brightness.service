@@ -1,0 +1,11 @@
+[Unit]
+Description=Smooth Brightness Background Service
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/smooth_brightness.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

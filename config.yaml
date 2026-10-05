@@ -119,12 +119,31 @@ modules:
         sudo: true
         ownership: root:root
         permissions: '644'
+      
+      - when:
+          tag: laptop
+        do:
+          - name: symlink
+            source: smooth_brightness/smooth_brightness.sh
+            target: ~/.local/bin/
+          - name: symlink
+            source: smooth_brightness/smooth_brightness.service
+            target: ~/.config/systemd/gustav/smooth_brightness.service
+          
       - name: systemctl_exec
         command: "daemon-reload --user"
       - name: systemctl_exec
         command: "enable --user --now kanata.service"
       - name: systemctl_exec
         command: "start --user kanata.service"
+      
+      - when:
+          tag: laptop
+        do:
+          - name: systemctl_exec
+            command: "enable --user --now smooth_brightness.service"
+          - name: systemctl_exec
+            command: "start --user smooth_brightness.service"
           
   - name: symlink
     source: .bashrc
