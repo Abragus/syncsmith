@@ -63,9 +63,9 @@ class EditFile(SyncsmithModule):
                         continue
                     print(f"Adding content before '{before_text}': {text}")
                     content = content.replace(before_text, text + "\n" + before_text)
-
-                print(f"Adding content: {text}")
-                content += "\n" + text
+                else:
+                    print(f"Adding content: {text}")
+                    content += "\n" + text
             elif "delete" in modification:
                 print(f"Deleting content: {modification.get('delete', '')}")
                 lines = content.splitlines()
